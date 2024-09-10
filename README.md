@@ -45,7 +45,7 @@ It is natural to override the global configuration when sending a request:
 <!-- prettier-ignore -->
 ```typescript
 import { request } from "keq";
-import { cache, Strategy, MaxMemoryPolicy } from "keq-cache";
+import { cache, Strategy, Eviction } from "keq-cache";
 
 request
   .get("/example")
@@ -54,21 +54,21 @@ request
       strategy: Strategy.NETWORK_FIRST,
       key: 'custom-cache-key',
       ttl: 1000,
-      maxMemoryPolicy: MaxMemoryPolicy.ALL_KEYS_LRU,
+      eviction: Eviction.ALL_KEYS_LRU,
     },
   });
 ```
 
 ## Rules
 
-| Name            | Default                       | Description                                       |
-| :-------------- | :---------------------------- | :------------------------------------------------ |
-| key             |                               |
-| pattern         | -                             |
-| strategy        | [NetworkFirst](#networkfirst) | how generates a response after receiving a fetch. |
-| ttl             | `Infinity`                    | cache time to live                                |
-| maxMemory       | 5MB                           | max memory size                                   |
-| maxMemoryPolicy | [VolatileTTL](#volatilettl)   | Eviction policies when memory is insufficient     |
+| Name      | Default                       | Description                                       |
+| :-------- | :---------------------------- | :------------------------------------------------ |
+| key       |                               |
+| pattern   | -                             |
+| strategy  | [NetworkFirst](#networkfirst) | how generates a response after receiving a fetch. |
+| ttl       | `Infinity`                    | cache time to live                                |
+| maxMemory | 5MB                           | max memory size                                   |
+| Eviction  | [VolatileTTL](#volatilettl)   | Eviction policies when memory is insufficient     |
 
 ## Strategies
 
@@ -104,7 +104,7 @@ request
 
 ### Memory
 
-## MaxMemoryPolicy
+## Eviction
 
 ### AllKeysLRU
 
