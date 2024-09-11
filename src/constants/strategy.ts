@@ -1,0 +1,6 @@
+export enum Strategy {
+  STALE_WHILE_REVALIDATE,
+  NETWORK_FIRST,
+  NETWORK_ONLY,
+  CATCH_FIRST,
+}

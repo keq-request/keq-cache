@@ -96,13 +96,22 @@ request
 
 ### LocalStorage
 
+- Not support binary
+- Maximum 5MB
+
 ### SessionStorage
+
+- Not support binary
+- Clear after browser closed
+- Maximum 5MB
 
 ### IndexedDB
 
 ### Cache
 
 ### Memory
+
+- Clear on refresh
 
 ## Eviction
 
