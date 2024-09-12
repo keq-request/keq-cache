@@ -1,6 +1,6 @@
-import { KeqCacheStorage } from '~/storage/keq-cache-storage'
+import { BaseStorage } from '~/storage/keq-cache-storage'
 
 
 export abstract class KeqCacheEviction {
-  abstract evict(storage: KeqCacheStorage, size: number): void
+  abstract evict(storage: BaseStorage, size: number): void
 }

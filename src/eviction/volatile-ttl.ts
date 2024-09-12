@@ -1,25 +1,17 @@
+import { BaseStorage } from '~/storage/keq-cache-storage'
 import { KeqCacheEviction } from './keq-cache-eviction'
-import { CacheEntry } from '~/types/cache-entry'
 
 
 export class VolatileTTL extends KeqCacheEviction {
-  add(key: string, entry: CacheEntry): void {
-    entry.visitAt = new Date().toISOString()
-    this.storage.add(key, entry)
-  }
+  async evict(storage: BaseStorage, size: number): Promise<void> {
+    const cursor = storage.createCursor('ttl', 'asc')
 
-  remove(key: string): void {
-    this.storage.remove(key)
-  }
+    let s = cursor.value?.size || 0
 
-  has(key: string): boolean {
-    return this.storage.has(key)
-  }
-
-  get(key: string): CacheEntry | undefined {
-    const entry = this.storage.get(key)
-    if (!entry) return
-    this.storage.update(key, 'visitAt', new Date().toISOString())
-    return entry
+    while (s < size && cursor.value) {
+      s += cursor.value?.size || 0
+      await storage.remove(cursor.value.key)
+      await cursor.next()
+    }
   }
 }
