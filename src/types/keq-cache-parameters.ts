@@ -1,7 +1,7 @@
-import { BaseStorage } from '~/storage/keq-cache-storage'
 import { KeqCacheRule } from './keq-cache-rule'
 import { Class } from 'type-fest'
 import { Eviction } from '~/constants/eviction'
+import { BaseStorage } from '~/storage/base-storage'
 
 
 export interface KeqCacheParameters {
@@ -11,6 +11,8 @@ export interface KeqCacheParameters {
   storage?: Class<BaseStorage>
 
   /**
+   * byte
+   *
    * @default 2MB
    */
   maxStorageSize?: number

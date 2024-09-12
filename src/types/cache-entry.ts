@@ -6,7 +6,7 @@ export interface CacheEntry {
    * Must be int
    */
   size: number
-  expiredAt: string
+  expiredAt?: string
   createAt: string
   visitAt: string
   visitCount: number

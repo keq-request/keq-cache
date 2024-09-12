@@ -4,6 +4,8 @@ import { KeqCacheParameters } from './types/keq-cache-parameters'
 import { MemoryStorage } from './storage/memory-storage'
 import { Eviction } from './constants/eviction'
 import { BaseStorage } from './storage/base-storage'
+import { getResponseBytes } from './utils/get-response-bytes'
+import dayjs from 'dayjs'
 
 declare module 'keq' {
   export interface KeqOptions<T> {
@@ -17,7 +19,7 @@ declare module 'keq' {
 
 export function cache(opts?: KeqCacheParameters): KeqMiddleware {
   const StorageClass = opts?.storage || MemoryStorage
-  const storage: BaseStorage = new StorageClass(opts?.eviction || Eviction.VOLATILE_TTL)
+  const storage: BaseStorage = new StorageClass(opts?.maxStorageSize || Infinity, opts?.eviction || Eviction.VOLATILE_TTL)
 
   return async (ctx, next) => {
     const identifier = ctx.identifier
@@ -33,7 +35,15 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
     await next()
 
     if (ctx.response) {
-      const size = ctx.response.arrayBuffer
+      storage.add(identifier, {
+        key: identifier,
+        response: ctx.response,
+        size: await getResponseBytes(ctx.response),
+        createAt: dayjs().toISOString(),
+        expiredAt: undefined,
+        visitAt: dayjs().toISOString(),
+        visitCount: 1,
+      })
     }
   }
 }
