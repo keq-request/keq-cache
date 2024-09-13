@@ -1,18 +1,19 @@
 import dayjs from 'dayjs'
 import { KeqContext, KeqNext } from 'keq'
-import { BaseStorage } from '~/storage/base-storage'
+import { StrategyOptions } from '~/types/strategies-options'
+import { createResponseProxy } from '~/utils/create-response-proxy'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 
 
-export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, storage: BaseStorage): Promise<void> {
-  const identifier = ctx.identifier
+export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
+  const { key, storage } = opts
 
   async function updateCache(): Promise<void> {
     await next()
 
     if (ctx.response) {
-      storage.add(identifier, {
-        key: identifier,
+      storage.add({
+        key: key,
         response: ctx.response,
         size: await getResponseBytes(ctx.response),
         createAt: dayjs().toISOString(),
@@ -23,11 +24,15 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, stora
     }
   }
 
-  const cache = await storage.get(identifier)
+  const cache = await storage.get(key)
   if (cache) {
     // hit cache
     ctx.res = cache.response
-    void updateCache()
+    ctx.response = createResponseProxy(cache.response)
+    ctx.metadata.entryNextTimes = 1
+    ctx.metadata.outNextTimes = 1
+
+    setTimeout(updateCache, 1)
   } else {
     await updateCache()
   }

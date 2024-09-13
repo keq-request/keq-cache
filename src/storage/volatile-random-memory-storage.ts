@@ -1,6 +1,8 @@
 import { CacheEntry } from '~/types/cache-entry'
 import { BaseStorage } from './base-storage'
 import dayjs from 'dayjs'
+import * as R from 'ramda'
+import { random } from '~/utils/random'
 
 
 export class VolatileTTLMemoryStorage extends BaseStorage {
@@ -65,30 +67,36 @@ export class VolatileTTLMemoryStorage extends BaseStorage {
     }
   }
 
+  private free(arr: CacheEntry[], size: number): void {
+    let freedSize = 0
+    while (freedSize < size && arr.length) {
+      const index = random(0, arr.length - 1)
+      const item = arr[index]
+      freedSize += item.size
+      arr.splice(index, 1)
+      this.remove(item.key)
+    }
+  }
+
   evict(size: number): void {
     if ((this.__size__ - this.sizeOccupied) > size) return
 
     this.clearTTL()
     if ((this.__size__ - this.sizeOccupied) > size) return
 
+    const volatile = [...this.volatile.values()]
+    const totalVolatileSize = R.sum(R.pluck('size', volatile))
 
-    const items = [...this.volatile.values(), ...this.permanent.values()]
-      .sort((a, b) => {
-        if (!a.expiredAt && !b.expiredAt) {
-          return dayjs(a.createAt).isBefore(b.createAt) ? 1 : -1
-        }
+    // if total volatile size is less than the size need to free
+    if (totalVolatileSize < (size - (this.__size__ - this.sizeOccupied))) {
+      for (const item of volatile) {
+        this.remove(item.key)
+      }
 
-        if (!a.expiredAt) return -1
-        if (!b.expiredAt) return 1
-
-        return dayjs(a.expiredAt).isBefore(b.expiredAt) ? 1 : -1
-      })
-
-    let freedSize = 0
-    while (freedSize < size && items.length) {
-      const item = items.pop()!
-      freedSize += item.size
-      this.remove(item.key)
+      const permanent = [...this.permanent.values()]
+      this.free(permanent, size - (this.__size__ - this.sizeOccupied))
+    } else {
+      this.free(volatile, size - (this.__size__ - this.sizeOccupied))
     }
   }
 }

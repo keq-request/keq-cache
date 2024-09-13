@@ -7,18 +7,23 @@ import { CacheEntry } from '~/types/cache-entry'
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage
 
-  constructor(size: number, eviction: Eviction) {
-    super(size, eviction)
+  constructor(size: number, threshold: number, eviction: Eviction) {
+    super(size, threshold, eviction)
 
     if (eviction === Eviction.VOLATILE_TTL) {
-      this.storage = new VolatileTTLMemoryStorage(size, eviction)
+      this.storage = new VolatileTTLMemoryStorage(size, threshold, eviction)
     } else {
       throw TypeError(`Not Supported Eviction: ${eviction}`)
     }
   }
 
-  add(key: string, entry: CacheEntry): Promisable<void> {
-    return this.storage.add(key, entry)
+  length(): Promisable<number> {
+    return this.storage.length()
+  }
+
+  add(entry: CacheEntry): Promisable<void> {
+    if (entry.size > this.__threshold__) return
+    return this.storage.add(entry)
   }
 
   get(key: string): Promisable<CacheEntry | undefined> {

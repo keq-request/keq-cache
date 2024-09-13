@@ -1,11 +1,6 @@
-// export enum Storage {
-//   LOCAL_STORAGE,
-//   SESSION_STORAGE,
-//   CACHE,
-//   MEMORY,
-//   INDEXED_DB,
-// }
+import { MemoryStorage } from '~/storage/memory-storage'
+
 
 export const STORAGE = {
-  localStorage,
+  MEMORY: MemoryStorage,
 }
