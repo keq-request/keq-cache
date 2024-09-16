@@ -5,6 +5,44 @@ import { Eviction } from '~/constants/eviction'
 import dayjs from 'dayjs'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 
+async function appendExpiringItem(storage: MemoryStorage, num: number): Promise<void> {
+  for (const i of R.range(0, num)) {
+    const response = new Response('hello world', { status: 200 })
+
+    const size = await getResponseBytes(response.clone())
+    await storage.evict(size)
+
+    await storage.add({
+      key: `temp_${i}`,
+      createAt: dayjs().toISOString(),
+      visitAt: dayjs().toISOString(),
+      visitCount: 1,
+      response,
+      size,
+      expiredAt: dayjs()
+        .add(i, 'minute')
+        .toISOString(),
+    })
+  }
+}
+
+async function appendPermanentItem(storage: MemoryStorage, num: number): Promise<void> {
+  for (const i of R.range(0, num)) {
+    const response = new Response('hello world', { status: 200 })
+
+    const size = await getResponseBytes(response.clone())
+    await storage.evict(size)
+
+    await storage.add({
+      key: `pre_${i}`,
+      createAt: dayjs().toISOString(),
+      visitAt: dayjs().toISOString(),
+      visitCount: 1,
+      response,
+      size,
+    })
+  }
+}
 
 test('new MemoryStorage(Infinity, Eviction.VOLATILE_TTL)', async () => {
   const storage = new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)
@@ -31,31 +69,37 @@ test('new MemoryStorage(Infinity, Eviction.VOLATILE_TTL)', async () => {
 test('new MemoryStorage(100, Eviction.VOLATILE_TTL)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_TTL)
 
+  await appendExpiringItem(storage, 10)
+
+  const temp_0 = await storage.get('temp_0')
+  expect(temp_0).toBeUndefined()
+
+  const temp_1 = await storage.get('temp_1')
+  expect(temp_1).toBeDefined()
+  expect(await temp_1?.response.text()).toBe('hello world')
+
+  expect(await storage.length()).toBe(9)
+})
+
+test('new MemoryStorage(100, Eviction.VOLATILE_RANDOM)', async () => {
+  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_RANDOM)
+
+  await appendExpiringItem(storage, 10)
+
+  expect(await storage.length()).toBe(9)
+
+  await appendPermanentItem(storage, 10)
+
+  expect(await storage.length()).toBe(9)
   for (const i of R.range(0, 10)) {
-    const response = new Response('hello world', { status: 200 })
-
-    const size = await getResponseBytes(response.clone())
-    await storage.evict(size)
-
-    await storage.add({
-      key: `key_${i}`,
-      createAt: dayjs().toISOString(),
-      visitAt: dayjs().toISOString(),
-      visitCount: 1,
-      response,
-      size,
-      expiredAt: dayjs()
-        .add(i, 'minute')
-        .toISOString(),
-    })
+    expect(storage.get(`key_${i}`)).toBeUndefined()
   }
+})
 
-  const key_0 = await storage.get('key_0')
-  expect(key_0).toBeUndefined()
+test('new MemoryStorage(100, Eviction.ALL_KEYS_RANDOM)', async () => {
+  const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_RANDOM)
 
-  const key_1 = await storage.get('key_1')
-  expect(key_1).toBeDefined()
-  expect(await key_1?.response.text()).toBe('hello world')
+  await appendExpiringItem(storage, 10)
 
   expect(await storage.length()).toBe(9)
 })

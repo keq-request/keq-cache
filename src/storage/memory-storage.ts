@@ -3,6 +3,8 @@ import { BaseStorage } from './base-storage'
 import { VolatileTTLMemoryStorage } from './volatile-ttl-memory-storage'
 import { Promisable } from 'type-fest'
 import { CacheEntry } from '~/types/cache-entry'
+import { VolatileRandomMemoryStorage } from './volatile-random-memory-storage'
+import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage'
 
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage
@@ -12,6 +14,10 @@ export class MemoryStorage extends BaseStorage {
 
     if (eviction === Eviction.VOLATILE_TTL) {
       this.storage = new VolatileTTLMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.VOLATILE_RANDOM) {
+      this.storage = new VolatileRandomMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.ALL_KEYS_RANDOM) {
+      this.storage = new AllKeysRandomMemoryStorage(size, threshold, eviction)
     } else {
       throw TypeError(`Not Supported Eviction: ${eviction}`)
     }

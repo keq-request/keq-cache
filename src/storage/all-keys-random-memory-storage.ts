@@ -1,11 +1,10 @@
 import { CacheEntry } from '~/types/cache-entry'
 import { BaseStorage } from './base-storage'
 import dayjs from 'dayjs'
-import * as R from 'ramda'
 import { random } from '~/utils/random'
 
 
-export class VolatileRandomMemoryStorage extends BaseStorage {
+export class AllKeysRandomMemoryStorage extends BaseStorage {
   private permanent = new Map<string, CacheEntry>()
   private volatile = new Map<string, CacheEntry>()
   private sizeOccupied = 0
@@ -84,19 +83,7 @@ export class VolatileRandomMemoryStorage extends BaseStorage {
     this.clearTTL()
     if ((this.__size__ - this.sizeOccupied) > size) return
 
-    const volatile = [...this.volatile.values()]
-    const totalVolatileSize = R.sum(R.pluck('size', volatile))
-
-    // if total volatile size is less than the size need to free
-    if (totalVolatileSize < (size - (this.__size__ - this.sizeOccupied))) {
-      for (const item of volatile) {
-        this.remove(item.key)
-      }
-
-      const permanent = [...this.permanent.values()]
-      this.free(permanent, size - (this.__size__ - this.sizeOccupied))
-    } else {
-      this.free(volatile, size - (this.__size__ - this.sizeOccupied))
-    }
+    const items = [...this.volatile.values(), ...this.permanent.values()]
+    this.free(items, size - (this.__size__ - this.sizeOccupied))
   }
 }
