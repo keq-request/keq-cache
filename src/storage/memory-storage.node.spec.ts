@@ -15,12 +15,15 @@ async function appendExpiringItem(storage: MemoryStorage, num: number): Promise<
     await storage.add({
       key: `temp_${i}`,
       createAt: dayjs().toISOString(),
-      visitAt: dayjs().toISOString(),
+      visitAt: dayjs()
+        .add(i, 'minute')
+        .toISOString(),
+
       visitCount: 1,
       response,
       size,
       expiredAt: dayjs()
-        .add(i, 'minute')
+        .add(i + 100, 'minute')
         .toISOString(),
     })
   }
@@ -102,4 +105,14 @@ test('new MemoryStorage(100, Eviction.ALL_KEYS_RANDOM)', async () => {
   await appendExpiringItem(storage, 10)
 
   expect(await storage.length()).toBe(9)
+})
+
+test.only('new MemoryStorage(100, Eviction.ALL_KEYS_LRU)', async () => {
+  const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LRU)
+
+  await appendExpiringItem(storage, 10)
+
+  expect(await storage.length()).toBe(9)
+  const temp_0 = await storage.get('temp_0')
+  expect(temp_0).toBeUndefined()
 })
