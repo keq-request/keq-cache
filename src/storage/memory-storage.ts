@@ -6,6 +6,7 @@ import { CacheEntry } from '~/types/cache-entry'
 import { VolatileRandomMemoryStorage } from './volatile-random-memory-storage'
 import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage'
 import { AllKeysLRUMemoryStorage } from './all-keys-lru-memory-storage'
+import { AllKeysLFUMemoryStorage } from './all-keys-lfu-memory-storage'
 
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage
@@ -21,6 +22,8 @@ export class MemoryStorage extends BaseStorage {
       this.storage = new AllKeysRandomMemoryStorage(size, threshold, eviction)
     } else if (eviction === Eviction.ALL_KEYS_LRU) {
       this.storage = new AllKeysLRUMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.ALL_KEYS_LFU) {
+      this.storage = new AllKeysLFUMemoryStorage(size, threshold, eviction)
     } else {
       throw TypeError(`Not Supported Eviction: ${eviction}`)
     }
