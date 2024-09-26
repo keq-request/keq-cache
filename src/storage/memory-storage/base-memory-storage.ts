@@ -1,13 +1,16 @@
-import { CacheEntry } from '~/types/cache-entry'
-import { BaseStorage } from './base-storage'
 import dayjs from 'dayjs'
-import { random } from '~/utils/random'
+import { CacheEntry } from '~/types/cache-entry.js'
+import { BaseStorage } from '../base-storage.js'
 
 
-export class AllKeysRandomMemoryStorage extends BaseStorage {
-  private permanent = new Map<string, CacheEntry>()
-  private volatile = new Map<string, CacheEntry>()
-  private sizeOccupied = 0
+export abstract class BaseMemoryStorage extends BaseStorage {
+  protected permanent = new Map<string, CacheEntry>()
+  protected volatile = new Map<string, CacheEntry>()
+  protected sizeOccupied = 0
+
+  protected get sizeUnoccupied(): number {
+    return this.__size__ - this.sizeOccupied
+  }
 
   length(): number {
     return [...this.volatile.keys(), ...this.permanent.keys()].length
@@ -57,7 +60,7 @@ export class AllKeysRandomMemoryStorage extends BaseStorage {
     entry[prop] = value
   }
 
-  private clearTTL(): void {
+  protected removeOutdated(): void {
     const now = dayjs()
     for (const [key, entry] of this.volatile.entries()) {
       if (entry.expiredAt && now.isAfter(entry.expiredAt)) {
@@ -65,25 +68,5 @@ export class AllKeysRandomMemoryStorage extends BaseStorage {
       }
     }
   }
-
-  private free(arr: CacheEntry[], size: number): void {
-    let freedSize = 0
-    while (freedSize < size && arr.length) {
-      const index = random(0, arr.length - 1)
-      const item = arr[index]
-      freedSize += item.size
-      arr.splice(index, 1)
-      this.remove(item.key)
-    }
-  }
-
-  evict(size: number): void {
-    if ((this.__size__ - this.sizeOccupied) > size) return
-
-    this.clearTTL()
-    if ((this.__size__ - this.sizeOccupied) > size) return
-
-    const items = [...this.volatile.values(), ...this.permanent.values()]
-    this.free(items, size - (this.__size__ - this.sizeOccupied))
-  }
 }
+

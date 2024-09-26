@@ -1,13 +1,13 @@
-import { Eviction } from '~/constants/eviction'
-import { BaseStorage } from './base-storage'
-import { VolatileTTLMemoryStorage } from './volatile-ttl-memory-storage'
 import { Promisable } from 'type-fest'
-import { CacheEntry } from '~/types/cache-entry'
-import { VolatileRandomMemoryStorage } from './volatile-random-memory-storage'
-import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage'
-import { AllKeysLRUMemoryStorage } from './all-keys-lru-memory-storage'
-import { AllKeysLFUMemoryStorage } from './all-keys-lfu-memory-storage'
-import { VolatileLRUMemoryStorage } from './volatile-lru-memory-storage'
+import { Eviction } from '~/constants/eviction.js'
+import { BaseStorage } from '../base-storage.js'
+import { VolatileTTLMemoryStorage } from './volatile-ttl-memory-storage.js'
+import { CacheEntry } from '~/types/cache-entry.js'
+import { VolatileRandomMemoryStorage } from './volatile-random-memory-storage.js'
+import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage.js'
+import { AllKeysLRUMemoryStorage } from './all-keys-lru-memory-storage.js'
+import { AllKeysLFUMemoryStorage } from './all-keys-lfu-memory-storage.js'
+import { VolatileLRUMemoryStorage } from './volatile-lru-memory-storage.js'
 
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage

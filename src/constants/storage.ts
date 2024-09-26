@@ -1,4 +1,4 @@
-import { MemoryStorage } from '~/storage/memory-storage'
+import { MemoryStorage } from '~/storage/memory-storage/memory-storage.js'
 
 
 export const STORAGE = {

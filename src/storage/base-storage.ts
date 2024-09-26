@@ -1,6 +1,6 @@
-import { CacheEntry } from '~/types/cache-entry'
 import { Promisable } from 'type-fest'
-import { Eviction } from '~/constants/eviction'
+import { CacheEntry } from '~/types/cache-entry.js'
+import { Eviction } from '~/constants/eviction.js'
 
 export abstract class BaseStorage {
   constructor(
