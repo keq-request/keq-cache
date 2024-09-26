@@ -39,8 +39,10 @@ async function appendPermanentItem(storage: MemoryStorage, num: number): Promise
     await storage.add({
       key: `pre_${i}`,
       createAt: dayjs().toISOString(),
-      visitAt: dayjs().toISOString(),
-      visitCount: 1,
+      visitAt: dayjs()
+        .add(i, 'minute')
+        .toISOString(),
+      visitCount: 1 + i,
       response,
       size,
     })
@@ -98,7 +100,7 @@ test('new MemoryStorage(100, Eviction.VOLATILE_RANDOM)', async () => {
 
   expect(await storage.length()).toBe(9)
   for (const i of R.range(0, 10)) {
-    expect(storage.get(`key_${i}`)).toBeUndefined()
+    expect(storage.get(`temp_${i}`)).toBeUndefined()
   }
 })
 
@@ -123,7 +125,7 @@ test('new MemoryStorage(100, Eviction.ALL_KEYS_LRU)', async () => {
 })
 
 
-test.only('new MemoryStorage(100, Eviction.ALL_KEYS_LFU)', async () => {
+test('new MemoryStorage(100, Eviction.ALL_KEYS_LFU)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LFU)
 
   await appendExpiringItem(storage, 10)
@@ -131,4 +133,22 @@ test.only('new MemoryStorage(100, Eviction.ALL_KEYS_LFU)', async () => {
   expect(await storage.length()).toBe(9)
   const temp_0 = await storage.get('temp_0')
   expect(temp_0).toBeUndefined()
+})
+
+test('new MemoryStorage(100, Eviction.VOLATILE_LRU)', async () => {
+  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LRU)
+
+  await appendExpiringItem(storage, 10)
+
+  expect(await storage.length()).toBe(9)
+  const temp_0 = await storage.get('temp_0')
+  expect(temp_0).toBeUndefined()
+
+  await appendPermanentItem(storage, 10)
+  expect(await storage.length()).toBe(9)
+  for (const i of R.range(0, 10)) {
+    expect(storage.get(`temp_${i}`)).toBeUndefined()
+  }
+  const pre_0 = await storage.get('pre_0')
+  expect(pre_0).toBeUndefined()
 })
