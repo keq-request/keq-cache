@@ -1,3 +1,4 @@
+import 'isomorphic-fetch'
 import { afterAll, beforeAll, beforeEach, jest } from '@jest/globals'
 // import { TextEncoder, TextDecoder } from 'util'
 
