@@ -152,3 +152,21 @@ test('new MemoryStorage(100, Eviction.VOLATILE_LRU)', async () => {
   const pre_0 = await storage.get('pre_0')
   expect(pre_0).toBeUndefined()
 })
+
+test('new MemoryStorage(100, Eviction.VOLATILE_LFU)', async () => {
+  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LFU)
+
+  await appendExpiringItem(storage, 10)
+
+  expect(await storage.length()).toBe(9)
+  const temp_0 = await storage.get('temp_0')
+  expect(temp_0).toBeUndefined()
+
+  await appendPermanentItem(storage, 10)
+  expect(await storage.length()).toBe(9)
+  for (const i of R.range(0, 10)) {
+    expect(storage.get(`temp_${i}`)).toBeUndefined()
+  }
+  const pre_0 = await storage.get('pre_0')
+  expect(pre_0).toBeUndefined()
+})

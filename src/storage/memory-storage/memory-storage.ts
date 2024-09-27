@@ -8,6 +8,7 @@ import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage.js'
 import { AllKeysLRUMemoryStorage } from './all-keys-lru-memory-storage.js'
 import { AllKeysLFUMemoryStorage } from './all-keys-lfu-memory-storage.js'
 import { VolatileLRUMemoryStorage } from './volatile-lru-memory-storage.js'
+import { VolatileLFUMemoryStorage } from './volatile-lfu-memory-storage.js'
 
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage
@@ -27,8 +28,10 @@ export class MemoryStorage extends BaseStorage {
       this.storage = new AllKeysLFUMemoryStorage(size, threshold, eviction)
     } else if (eviction === Eviction.VOLATILE_LRU) {
       this.storage = new VolatileLRUMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.VOLATILE_LFU) {
+      this.storage = new VolatileLFUMemoryStorage(size, threshold, eviction)
     } else {
-      throw TypeError(`Not Supported Eviction: ${eviction}`)
+      throw TypeError(`Not Supported Eviction: ${String(eviction!)}`)
     }
   }
 
