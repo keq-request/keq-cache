@@ -2,62 +2,18 @@ import * as R from 'ramda'
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from './memory-storage'
 import { Eviction } from '~/constants/eviction'
-import dayjs from 'dayjs'
 import { getResponseBytes } from '~/utils/get-response-bytes'
-
-async function appendExpiringItem(storage: MemoryStorage, num: number): Promise<void> {
-  for (const i of R.range(0, num)) {
-    const response = new Response('hello world', { status: 200 })
-
-    const size = await getResponseBytes(response.clone())
-    await storage.evict(size)
-
-    await storage.add({
-      key: `temp_${i}`,
-      createAt: dayjs().toISOString(),
-      visitAt: dayjs()
-        .add(i, 'minute')
-        .toISOString(),
-
-      visitCount: 1 + i,
-      response,
-      size,
-      expiredAt: dayjs()
-        .add(i + 100, 'minute')
-        .toISOString(),
-    })
-  }
-}
-
-async function appendPermanentItem(storage: MemoryStorage, num: number): Promise<void> {
-  for (const i of R.range(0, num)) {
-    const response = new Response('hello world', { status: 200 })
-
-    const size = await getResponseBytes(response.clone())
-    await storage.evict(size)
-
-    await storage.add({
-      key: `pre_${i}`,
-      createAt: dayjs().toISOString(),
-      visitAt: dayjs()
-        .add(i, 'minute')
-        .toISOString(),
-      visitCount: 1 + i,
-      response,
-      size,
-    })
-  }
-}
+import { appendExpiringItem, appendPermanentItem } from '~~/__tests__/helpers'
 
 
-test('new MemoryStorage(Infinity, Eviction.VOLATILE_TTL)', async () => {
+test('new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)', async () => {
   const storage = new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)
   const response = new Response('hello world', { status: 200 })
 
   await storage.add({
     key: 'key',
-    createAt: dayjs().toISOString(),
-    visitAt: dayjs().toISOString(),
+    createAt: new Date(),
+    visitAt: new Date(),
     visitCount: 1,
     response,
     size: await getResponseBytes(response.clone()),
@@ -73,7 +29,7 @@ test('new MemoryStorage(Infinity, Eviction.VOLATILE_TTL)', async () => {
 })
 
 
-test('new MemoryStorage(100, Eviction.VOLATILE_TTL)', async () => {
+test('new MemoryStorage(100, 20, Eviction.VOLATILE_TTL)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_TTL)
 
   await appendExpiringItem(storage, 10)
@@ -89,7 +45,7 @@ test('new MemoryStorage(100, Eviction.VOLATILE_TTL)', async () => {
 })
 
 
-test('new MemoryStorage(100, Eviction.VOLATILE_RANDOM)', async () => {
+test('new MemoryStorage(100, 20, Eviction.VOLATILE_RANDOM)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_RANDOM)
 
   await appendExpiringItem(storage, 10)
@@ -105,7 +61,7 @@ test('new MemoryStorage(100, Eviction.VOLATILE_RANDOM)', async () => {
 })
 
 
-test('new MemoryStorage(100, Eviction.ALL_KEYS_RANDOM)', async () => {
+test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_RANDOM)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_RANDOM)
 
   await appendExpiringItem(storage, 10)
@@ -114,7 +70,7 @@ test('new MemoryStorage(100, Eviction.ALL_KEYS_RANDOM)', async () => {
 })
 
 
-test('new MemoryStorage(100, Eviction.ALL_KEYS_LRU)', async () => {
+test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_LRU)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LRU)
 
   await appendExpiringItem(storage, 10)
@@ -125,7 +81,7 @@ test('new MemoryStorage(100, Eviction.ALL_KEYS_LRU)', async () => {
 })
 
 
-test('new MemoryStorage(100, Eviction.ALL_KEYS_LFU)', async () => {
+test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_LFU)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LFU)
 
   await appendExpiringItem(storage, 10)
@@ -135,7 +91,7 @@ test('new MemoryStorage(100, Eviction.ALL_KEYS_LFU)', async () => {
   expect(temp_0).toBeUndefined()
 })
 
-test('new MemoryStorage(100, Eviction.VOLATILE_LRU)', async () => {
+test('new MemoryStorage(100, 20, Eviction.VOLATILE_LRU)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LRU)
 
   await appendExpiringItem(storage, 10)
@@ -149,11 +105,11 @@ test('new MemoryStorage(100, Eviction.VOLATILE_LRU)', async () => {
   for (const i of R.range(0, 10)) {
     expect(storage.get(`temp_${i}`)).toBeUndefined()
   }
-  const pre_0 = await storage.get('pre_0')
-  expect(pre_0).toBeUndefined()
+  const per_0 = await storage.get('per_0')
+  expect(per_0).toBeUndefined()
 })
 
-test('new MemoryStorage(100, Eviction.VOLATILE_LFU)', async () => {
+test('new MemoryStorage(100, 20, Eviction.VOLATILE_LFU)', async () => {
   const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LFU)
 
   await appendExpiringItem(storage, 10)
@@ -167,6 +123,6 @@ test('new MemoryStorage(100, Eviction.VOLATILE_LFU)', async () => {
   for (const i of R.range(0, 10)) {
     expect(storage.get(`temp_${i}`)).toBeUndefined()
   }
-  const pre_0 = await storage.get('pre_0')
-  expect(pre_0).toBeUndefined()
+  const per_0 = await storage.get('per_0')
+  expect(per_0).toBeUndefined()
 })
