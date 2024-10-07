@@ -4,6 +4,6 @@ export async function getResponseBytes(response: Response): Promise<number> {
     return parseInt(contentLength)
   }
 
-  const arrayBuffer = await response.arrayBuffer()
+  const arrayBuffer = await response.clone().arrayBuffer()
   return arrayBuffer.byteLength
 }

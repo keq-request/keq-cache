@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { IndexedBdStorage } from './indexed-db-storage'
+import { IndexedDBStorage } from './indexed-db-storage'
 import { Eviction } from '~/constants/eviction'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 import { beforeEach } from 'node:test'
@@ -12,8 +12,8 @@ beforeEach(async () => {
   await db.deleteObjectStore('responses')
 })
 
-test('new IndexedDBStorage(100, 20, Eviction.ALL_KEYS_RANDOM)', async () => {
-  const storage = new IndexedBdStorage(100, 20, Eviction.ALL_KEYS_RANDOM)
+test('new IndexedDBStorage(100, 20, Eviction.RANDOM)', async () => {
+  const storage = new IndexedDBStorage(100, 20, Eviction.RANDOM)
 
   const response = new Response('hello world', { status: 200 })
 

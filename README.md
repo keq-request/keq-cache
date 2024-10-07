@@ -17,7 +17,7 @@ import { cache, Strategy } from "keq-cache";
 request.use(cache());
 ```
 
-By default, [NetworkOnly Strategy](#networkonly) and use [Memory Storage](#memory) will be used for all request. And you can customize the global configuration:
+By default, [NetworkOnly Strategy](#networkonly) and [Memory Storage](#memory) will be used for all request. And you can customize the global configuration:
 
 <!-- prettier-ignore -->
 ```typescript
@@ -54,21 +54,33 @@ request
       strategy: Strategy.NETWORK_FIRST,
       key: 'custom-cache-key',
       ttl: 1000,
-      eviction: Eviction.ALL_KEYS_LRU,
     },
   });
 ```
 
-## Rules
+## Configuration
 
-| Name      | Default                       | Description                                       |
-| :-------- | :---------------------------- | :------------------------------------------------ |
-| key       |                               |
-| pattern   | -                             |
-| strategy  | [NetworkFirst](#networkfirst) | how generates a response after receiving a fetch. |
-| ttl       | `Infinity`                    | cache time to live                                |
-| maxMemory | 5MB                           | max memory size                                   |
-| Eviction  | [VolatileTTL](#volatilettl)   | Eviction policies when memory is insufficient     |
+| Name           | Default                           | Description                                                                                                       |
+| :------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| storage        | [Storage.Memory](#memory)         | [See More](#storage)                                                                                              |
+| maxStorageSize | 2MB                               | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
+| threshold      | `0.2 * maxStorageSize`            | If a request size is greater than threshold, it will not be cached. Don't be larger than `maxStorageSize`         |
+| Eviction       | [VolatileTTL](#volatilettl)       | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
+| keyFactory     | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache                           |
+| rules.pattern  | -                                 |
+| rules.key      | -                                 | The cache key factory for the request match the rule.                                                             |
+| rules.strategy | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)                                         |
+| rules.ttl      | `Infinity`                        | cache time to live                                                                                                |
+
+## Storage
+
+### Memory
+
+Store the cache in memory and make it invalid after the page is refreshed.
+
+### IndexedDB
+
+Storing the cache in IndexedBD that avoid cache invalid after refresh pages.
 
 ## Strategies
 
@@ -92,66 +104,27 @@ request
 
 ![cache-only](./images/cache-only.png)
 
-## Storage
-
-### LocalStorage
-
-- Not support binary
-- Maximum 5MB
-
-### SessionStorage
-
-- Not support binary
-- Clear after browser closed
-- Maximum 5MB
-
-### IndexedDB
-
-### Cache
-
-### Memory
-
-- Clear on refresh
-
 ## Eviction
 
-### AllKeysLRU
+### LRU
 
 Keeps most recently used keys; removes least recently used (LRU) keys
 
 > 淘汰整个键值中最久未使用的键值
 
-### VolatileLRU
-
-Removes least recently used keys with the expire field set to true.
-
-> 淘汰所有设置了过期时间的键值中最久未使用的键值
-
-### AllKeysRandom
+### Random
 
 Randomly removes keys to make space for the new data added.
 
 > 随机淘汰任意键值
 
-### VolatileRandom
-
-Randomly removes keys with expire field set to true
-
-> 随机淘汰设置了过期时间的任意键值
-
-### AllKeysLFU
+### LFU
 
 Keeps frequently used keys; removes least frequently used (LFU) keys
 
 > 淘汰整个键值中最少使用的键值
 
-### VolatileLFU
-
-Removes least frequently used keys with the expire field set to true.
-
-> 淘汰所有设置了过期时间的键值中，最少使用的键值
-
-### VolatileTTL
+### TTL
 
 Removes keys with expire field set to true and the shortest remaining time-to-live (TTL) value
 

@@ -1,7 +1,7 @@
 import { BaseIndexedDBStorage } from './base-indexed-db-storage'
 
 
-export class AllKeysLRUIndexedDBStorage extends BaseIndexedDBStorage {
+export class LRUIndexedDBStorage extends BaseIndexedDBStorage {
   async evict(size: number): Promise<void> {
     const db = await this.getDB()
 

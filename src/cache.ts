@@ -30,7 +30,7 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
   if (opts?.threshold) threshold = opts.threshold
   if (opts?.maxStorageSize) threshold = opts.maxStorageSize * 0.2
 
-  const storage: BaseStorage = new StorageClass(maxStorageSize, threshold, opts?.eviction || Eviction.VOLATILE_TTL)
+  const storage: BaseStorage = new StorageClass(maxStorageSize, threshold, opts?.eviction || Eviction.TTL)
   const rules: KeqCacheRule[] = opts?.rules || [{ pattern: () => true, strategy: Strategy.NETWORK_ONLY }]
 
   return async function cache(ctx, next) {
@@ -48,8 +48,8 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
     if (rule.key) {
       if (typeof rule.key === 'function') key = rule.key(ctx)
       else key = rule.key
-    } else if (opts?.key) {
-      key = opts.key(ctx)
+    } else if (opts?.keyFactory) {
+      key = opts.keyFactory(ctx)
     }
 
     const strategy = rule.strategy || Strategy.NETWORK_ONLY

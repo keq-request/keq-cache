@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { IndexedBdStorage } from './indexed-db-storage'
+import { IndexedDBStorage } from './indexed-db-storage'
 import { Eviction } from '~/constants/eviction'
 import { appendExpiringItem, appendPermanentItem } from '~~/__tests__/helpers'
 import { beforeEach } from 'node:test'
@@ -12,8 +12,8 @@ beforeEach(async () => {
   await db.deleteObjectStore('responses')
 })
 
-test.only('new IndexedDBStorage(100, 20, Eviction.VOLATILE_TTL)', async () => {
-  const storage = new IndexedBdStorage(100, 20, Eviction.VOLATILE_TTL)
+test.only('new IndexedDBStorage(100, 20, Eviction.TTL)', async () => {
+  const storage = new IndexedDBStorage(100, 20, Eviction.TTL)
 
   await appendExpiringItem(storage, 10)
   expect(await storage.length()).toBe(9)

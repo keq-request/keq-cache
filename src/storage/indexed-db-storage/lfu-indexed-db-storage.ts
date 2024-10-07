@@ -1,7 +1,7 @@
 import { BaseIndexedDBStorage } from './base-indexed-db-storage'
 
 
-export class VolatileTTLIndexedDBStorage extends BaseIndexedDBStorage {
+export class LFUIndexedDBStorage extends BaseIndexedDBStorage {
   async evict(size: number): Promise<void> {
     const db = await this.getDB()
 
@@ -15,7 +15,7 @@ export class VolatileTTLIndexedDBStorage extends BaseIndexedDBStorage {
     const entriesStore = tx.objectStore('entries')
     const responsesStore = tx.objectStore('responses')
 
-    let cursor = await entriesStore.index('expiredAt').openCursor()
+    let cursor = await entriesStore.index('visitCount').openCursor()
 
     while (sizeUnoccupied < size && cursor) {
       await cursor.delete()

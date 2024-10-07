@@ -1,7 +1,7 @@
 import { BaseIndexedDBStorage } from './base-indexed-db-storage'
 
 
-export class AllKeysLFUIndexedDBStorage extends BaseIndexedDBStorage {
+export class TTLIndexedDBStorage extends BaseIndexedDBStorage {
   async evict(size: number): Promise<void> {
     const db = await this.getDB()
 
@@ -11,11 +11,12 @@ export class AllKeysLFUIndexedDBStorage extends BaseIndexedDBStorage {
     let sizeUnoccupied = await this.getSizeUnoccupied()
     if (size < sizeUnoccupied) return
 
+
     const tx = db.transaction(['entries', 'responses'], 'readwrite')
     const entriesStore = tx.objectStore('entries')
     const responsesStore = tx.objectStore('responses')
 
-    let cursor = await entriesStore.index('visitCount').openCursor()
+    let cursor = await entriesStore.index('expiredAt').openCursor()
 
     while (sizeUnoccupied < size && cursor) {
       await cursor.delete()

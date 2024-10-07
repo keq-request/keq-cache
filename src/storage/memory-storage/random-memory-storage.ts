@@ -1,9 +1,9 @@
 import { CacheEntry } from '~/types/cache-entry.js'
 import { random } from '~/utils/random.js'
-import { BaseVolatileMemoryStorage } from './base-volatile-memory-storage.js'
+import { BaseMemoryStorage } from './base-memory-storage'
 
 
-export class VolatileRandomMemoryStorage extends BaseVolatileMemoryStorage {
+export class RandomMemoryStorage extends BaseMemoryStorage {
   protected free(arr: CacheEntry[], size: number): void {
     let freedSize = 0
     while (freedSize < size && arr.length) {

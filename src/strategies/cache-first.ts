@@ -1,7 +1,5 @@
-import dayjs from 'dayjs'
-import { KeqContext, KeqNext } from 'keq'
+import { KeqContext, KeqNext, createResponseProxy } from 'keq'
 import { StrategyOptions } from '~/types/strategies-options'
-import { createResponseProxy } from '~/utils/create-response-proxy'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 
 export async function cacheFirst(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
@@ -27,9 +25,9 @@ export async function cacheFirst(ctx: KeqContext, next: KeqNext, opts: StrategyO
       key: key,
       response: ctx.response,
       size,
-      createAt: dayjs().toISOString(),
+      createAt: new Date(),
       expiredAt: undefined,
-      visitAt: dayjs().toISOString(),
+      visitAt: new Date(),
       visitCount: 1,
     })
   }

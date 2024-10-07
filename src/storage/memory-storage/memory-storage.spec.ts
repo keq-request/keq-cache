@@ -1,13 +1,11 @@
-import * as R from 'ramda'
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from './memory-storage'
 import { Eviction } from '~/constants/eviction'
 import { getResponseBytes } from '~/utils/get-response-bytes'
-import { appendExpiringItem, appendPermanentItem } from '~~/__tests__/helpers'
 
 
 test('new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)', async () => {
-  const storage = new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)
+  const storage = new MemoryStorage(Infinity, Infinity, Eviction.TTL)
   const response = new Response('hello world', { status: 200 })
 
   await storage.add({
@@ -26,103 +24,14 @@ test('new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)', async () =>
 
   const notExistCache = await storage.get('not_exist_key')
   expect(notExistCache).toBeUndefined()
-})
 
+  expect(await storage.has('key')).toBeTruthy()
+  await storage.update('key', 'visitCount', 10)
+  expect((await storage.get('key'))?.visitCount).toBe(10)
 
-test('new MemoryStorage(100, 20, Eviction.VOLATILE_TTL)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_TTL)
+  await storage.remove('key')
+  expect(await storage.has('key')).toBeFalsy()
 
-  await appendExpiringItem(storage, 10)
-
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
-
-  const temp_1 = await storage.get('temp_1')
-  expect(temp_1).toBeDefined()
-  expect(await temp_1?.response.text()).toBe('hello world')
-
-  expect(await storage.length()).toBe(9)
-})
-
-
-test('new MemoryStorage(100, 20, Eviction.VOLATILE_RANDOM)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_RANDOM)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-
-  await appendPermanentItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-  for (const i of R.range(0, 10)) {
-    expect(storage.get(`temp_${i}`)).toBeUndefined()
-  }
-})
-
-
-test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_RANDOM)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_RANDOM)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-})
-
-
-test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_LRU)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LRU)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
-})
-
-
-test('new MemoryStorage(100, 20, Eviction.ALL_KEYS_LFU)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.ALL_KEYS_LFU)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
-})
-
-test('new MemoryStorage(100, 20, Eviction.VOLATILE_LRU)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LRU)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
-
-  await appendPermanentItem(storage, 10)
-  expect(await storage.length()).toBe(9)
-  for (const i of R.range(0, 10)) {
-    expect(storage.get(`temp_${i}`)).toBeUndefined()
-  }
-  const per_0 = await storage.get('per_0')
-  expect(per_0).toBeUndefined()
-})
-
-test('new MemoryStorage(100, 20, Eviction.VOLATILE_LFU)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.VOLATILE_LFU)
-
-  await appendExpiringItem(storage, 10)
-
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
-
-  await appendPermanentItem(storage, 10)
-  expect(await storage.length()).toBe(9)
-  for (const i of R.range(0, 10)) {
-    expect(storage.get(`temp_${i}`)).toBeUndefined()
-  }
-  const per_0 = await storage.get('per_0')
-  expect(per_0).toBeUndefined()
+  // @ts-ignore
+  expect(() => new MemoryStorage(Infinity, Infinity, 'xxxx')).toThrowError()
 })

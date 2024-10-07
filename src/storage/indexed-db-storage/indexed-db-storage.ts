@@ -3,26 +3,26 @@ import { BaseStorage } from '../base-storage'
 import { Promisable } from 'type-fest'
 import { CacheEntry } from '~/types/cache-entry'
 
-import { AllKeysRandomIndexedDBStorage } from './all-keys-random-indexed-db-storage'
-import { AllKeysLFUIndexedDBStorage } from './all-keys-lfu-indexed-db-storage'
-import { AllKeysLRUIndexedDBStorage } from './all-keys-lru-indexed-db-storage'
-import { VolatileTTLIndexedDBStorage } from './volatile-ttl-indexed-db-storage'
+import { RandomIndexedDBStorage } from './random-indexed-db-storage'
+import { LFUIndexedDBStorage } from './lfu-indexed-db-storage'
+import { LRUIndexedDBStorage } from './lru-indexed-db-storage'
+import { TTLIndexedDBStorage } from './ttl-indexed-db-storage'
 
 
-export class IndexedBdStorage extends BaseStorage {
+export class IndexedDBStorage extends BaseStorage {
   private storage: BaseStorage
 
   constructor(size: number, threshold: number, eviction: Eviction) {
     super(size, threshold, eviction)
 
-    if (eviction === Eviction.ALL_KEYS_RANDOM) {
-      this.storage = new AllKeysRandomIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.ALL_KEYS_LFU) {
-      this.storage = new AllKeysLFUIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.ALL_KEYS_LRU) {
-      this.storage = new AllKeysLRUIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.VOLATILE_TTL) {
-      this.storage = new VolatileTTLIndexedDBStorage(size, threshold, eviction)
+    if (eviction === Eviction.RANDOM) {
+      this.storage = new RandomIndexedDBStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.LFU) {
+      this.storage = new LFUIndexedDBStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.LRU) {
+      this.storage = new LRUIndexedDBStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.TTL) {
+      this.storage = new TTLIndexedDBStorage(size, threshold, eviction)
     } else {
       throw TypeError(`Not Supported Eviction: ${String(eviction!)}`)
     }

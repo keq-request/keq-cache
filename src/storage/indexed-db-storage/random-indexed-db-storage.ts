@@ -2,7 +2,7 @@ import { random } from '~/utils/random'
 import { BaseIndexedDBStorage } from './base-indexed-db-storage'
 
 
-export class AllKeysRandomIndexedDBStorage extends BaseIndexedDBStorage {
+export class RandomIndexedDBStorage extends BaseIndexedDBStorage {
   async evict(size: number): Promise<void> {
     const db = await this.getDB()
 

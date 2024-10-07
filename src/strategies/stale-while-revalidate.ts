@@ -1,14 +1,51 @@
-import dayjs from 'dayjs'
-import { KeqContext, KeqNext } from 'keq'
+import { createResponseProxy, KeqContext, KeqNext } from 'keq'
 import { StrategyOptions } from '~/types/strategies-options'
-import { createResponseProxy } from '~/utils/create-response-proxy'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 
 
 export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
   const { key, storage } = opts
 
-  async function updateCache(): Promise<void> {
+  const cache = await storage.get(key)
+  if (cache) {
+    Object.defineProperty(ctx, 'res', {
+      get() {
+        return cache.response
+      },
+      async set(value) {
+        storage.add({
+          key: key,
+          response: value,
+          size: await getResponseBytes(value),
+          createAt: new Date(),
+          expiredAt: undefined,
+          visitAt: new Date(),
+          visitCount: 1,
+        })
+      },
+    })
+
+    Object.defineProperty(ctx, 'response', {
+      get() {
+        return createResponseProxy(cache.response)
+      },
+      set() {
+        // ignore
+      },
+    })
+
+    // hit cache
+    ctx.metadata.entryNextTimes = 1
+    ctx.metadata.outNextTimes = 1
+
+    setTimeout(async () => {
+      try {
+        await next()
+      } catch (err) {
+        // ignore
+      }
+    }, 1)
+  } else {
     await next()
 
     if (ctx.response) {
@@ -16,24 +53,11 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
         key: key,
         response: ctx.response,
         size: await getResponseBytes(ctx.response),
-        createAt: dayjs().toISOString(),
+        createAt: new Date(),
         expiredAt: undefined,
-        visitAt: dayjs().toISOString(),
+        visitAt: new Date(),
         visitCount: 1,
       })
     }
-  }
-
-  const cache = await storage.get(key)
-  if (cache) {
-    // hit cache
-    ctx.res = cache.response
-    ctx.response = createResponseProxy(cache.response)
-    ctx.metadata.entryNextTimes = 1
-    ctx.metadata.outNextTimes = 1
-
-    setTimeout(updateCache, 1)
-  } else {
-    await updateCache()
   }
 }

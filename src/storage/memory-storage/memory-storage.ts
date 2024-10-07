@@ -1,14 +1,11 @@
 import { Promisable } from 'type-fest'
 import { Eviction } from '~/constants/eviction.js'
 import { BaseStorage } from '../base-storage.js'
-import { VolatileTTLMemoryStorage } from './volatile-ttl-memory-storage.js'
+import { TTLMemoryStorage } from './ttl-memory-storage.js'
 import { CacheEntry } from '~/types/cache-entry.js'
-import { VolatileRandomMemoryStorage } from './volatile-random-memory-storage.js'
-import { AllKeysRandomMemoryStorage } from './all-keys-random-memory-storage.js'
-import { AllKeysLRUMemoryStorage } from './all-keys-lru-memory-storage.js'
-import { AllKeysLFUMemoryStorage } from './all-keys-lfu-memory-storage.js'
-import { VolatileLRUMemoryStorage } from './volatile-lru-memory-storage.js'
-import { VolatileLFUMemoryStorage } from './volatile-lfu-memory-storage.js'
+import { RandomMemoryStorage } from './random-memory-storage.js'
+import { LRUMemoryStorage } from './lru-memory-storage.js'
+import { LFUMemoryStorage } from './lfu-memory-storage.js'
 
 export class MemoryStorage extends BaseStorage {
   private storage: BaseStorage
@@ -16,20 +13,14 @@ export class MemoryStorage extends BaseStorage {
   constructor(size: number, threshold: number, eviction: Eviction) {
     super(size, threshold, eviction)
 
-    if (eviction === Eviction.VOLATILE_TTL) {
-      this.storage = new VolatileTTLMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.VOLATILE_RANDOM) {
-      this.storage = new VolatileRandomMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.ALL_KEYS_RANDOM) {
-      this.storage = new AllKeysRandomMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.ALL_KEYS_LRU) {
-      this.storage = new AllKeysLRUMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.ALL_KEYS_LFU) {
-      this.storage = new AllKeysLFUMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.VOLATILE_LRU) {
-      this.storage = new VolatileLRUMemoryStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.VOLATILE_LFU) {
-      this.storage = new VolatileLFUMemoryStorage(size, threshold, eviction)
+    if (eviction === Eviction.TTL) {
+      this.storage = new TTLMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.RANDOM) {
+      this.storage = new RandomMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.LRU) {
+      this.storage = new LRUMemoryStorage(size, threshold, eviction)
+    } else if (eviction === Eviction.LFU) {
+      this.storage = new LFUMemoryStorage(size, threshold, eviction)
     } else {
       throw TypeError(`Not Supported Eviction: ${String(eviction!)}`)
     }

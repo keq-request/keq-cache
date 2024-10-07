@@ -25,14 +25,14 @@ export interface KeqCacheParameters {
   threshold?: number
 
   /**
-   * @default Eviction.VOLATILE_TTL
+   * @default Eviction.TTL
    */
   eviction?: Eviction
 
   /**
    * Cache Key Factory
    */
-  key?: (context: KeqContext) => string
+  keyFactory?: (context: KeqContext) => string
 
   rules: KeqCacheRule[]
 }
