@@ -10,19 +10,20 @@
 
 ## Usage
 
+<!-- prettier-ignore -->
 ```typescript
-import { request } from "keq";
-import { cache, Strategy } from "keq-cache";
+import { request } from "keq"
+import { cache, Strategy } from "keq-cache"
 
-request.use(cache());
+request.use(cache())
 ```
 
 By default, [NetworkOnly Strategy](#networkonly) and [Memory Storage](#memory) will be used for all request. And you can customize the global configuration:
 
 <!-- prettier-ignore -->
 ```typescript
-import { request } from "keq";
-import { cache, Strategy } from "keq-cache";
+import { request } from "keq"
+import { cache, Strategy } from "keq-cache"
 
 request
   .use(
@@ -35,7 +36,7 @@ request
         },
       ],
     })
-  );
+  )
 ```
 
 The above configuration, all GET request will use [StateWileRevalidate Strategy](#stale-while-revalidate) and cache will expire after 5 minutes.
@@ -44,8 +45,8 @@ It is natural to override the global configuration when sending a request:
 
 <!-- prettier-ignore -->
 ```typescript
-import { request } from "keq";
-import { cache, Strategy, Eviction } from "keq-cache";
+import { request } from "keq"
+import { cache, Strategy, Eviction } from "keq-cache"
 
 request
   .get("/example")
@@ -55,7 +56,7 @@ request
       key: 'custom-cache-key',
       ttl: 1000,
     },
-  });
+  })
 ```
 
 ## Configuration
@@ -74,57 +75,60 @@ request
 
 ## Storage
 
-### Memory
+### `Storage.MEMORY`
 
 Store the cache in memory and make it invalid after the page is refreshed.
 
-### IndexedDB
+### `Storage.INDEXED_DB`
 
 Storing the cache in IndexedBD that avoid cache invalid after refresh pages.
 
 ## Strategies
 
-### StaleWhileRevalidate
-
-![stale-wile-revalidate](./images/stale-while-revalidate.png)
-
-### CacheFirst
-
-![cache-first](./images/cache-first.png)
-
-### NetworkFirst
-
-![network-first](./images/network-first.png)
-
-### NetworkOnly
+### `Strategies.NETWORK_ONLY`
 
 ![network-only](./images/network-only.png)
 
-### CacheOnly
+Send request directly. Don't use cache.
 
-![cache-only](./images/cache-only.png)
+### `Strategies.NETWORK_FIRST`
+
+![network-first](./images/network-first.png)
+
+Try to send the request, if it fails, return the cache.
+
+### `Strategies.CACHE_FIRST`
+
+![cache-first](./images/cache-first.png)
+
+Return cache if it exists, otherwise send request.
+
+### `Strategies.STALE_WHILE_REVALIDATE`
+
+![stale-wile-revalidate](./images/stale-while-revalidate.png)
+Return cache if it exists And then send request and update cache asynchronously.
 
 ## Eviction
 
-### LRU
+### `Eviction.LRU`
 
-Keeps most recently used keys; removes least recently used (LRU) keys
+Keeps most recently used keys removes least recently used (LRU) keys
 
 > 淘汰整个键值中最久未使用的键值
 
-### Random
+### `Eviction.RANDOM`
 
 Randomly removes keys to make space for the new data added.
 
 > 随机淘汰任意键值
 
-### LFU
+### `Eviction.LFU`
 
-Keeps frequently used keys; removes least frequently used (LFU) keys
+Keeps frequently used keys removes least frequently used (LFU) keys
 
 > 淘汰整个键值中最少使用的键值
 
-### TTL
+### `Eviction.TTL`
 
 Removes keys with expire field set to true and the shortest remaining time-to-live (TTL) value
 
