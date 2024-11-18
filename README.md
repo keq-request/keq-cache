@@ -28,6 +28,7 @@ import { cache, Strategy } from "keq-cache"
 request
   .use(
     cache({
+      storage: Storage.MEMORY,
       rules: [
         {
           pattern: (ctx) => ctx.request.method === "get",
@@ -50,7 +51,7 @@ import { cache, Strategy, Eviction } from "keq-cache"
 
 request
   .get("/example")
-  .option({
+  .options({
     cache: {
       strategy: Strategy.NETWORK_FIRST,
       key: 'custom-cache-key',
