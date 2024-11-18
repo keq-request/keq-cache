@@ -11,7 +11,7 @@ export interface KeqCacheOption {
   /**
    * @default Strategy.NETWORK_FIRST
    */
-  strategy?: Strategy
+  strategy: Strategy
 
   /**
    * @default Infinity

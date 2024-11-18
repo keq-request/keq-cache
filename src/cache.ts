@@ -58,7 +58,7 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
       key = opts.keyFactory(ctx)
     }
 
-    const strategy = cOpt.strategy || Strategy.NETWORK_ONLY
+    const strategy = cOpt.strategy
 
     const opt: StrategyOptions = {
       key,
