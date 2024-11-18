@@ -34,25 +34,31 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
   const rules: KeqCacheRule[] = opts?.rules || []
 
   return async function cache(ctx, next) {
-    const rule = rules.find((rule) => {
-      if (typeof rule.pattern === 'function') return rule.pattern(ctx)
-      return rule.pattern.test(ctx.request.__url__.href)
-    })
+    let cOpt: KeqCacheOption | undefined = ctx.options.cache
 
-    if (!rule) {
+    if (!cOpt) {
+      const rule = rules.find((rule) => {
+        if (typeof rule.pattern === 'function') return rule.pattern(ctx)
+        return rule.pattern.test(ctx.request.__url__.href)
+      })
+
+      if (rule) cOpt = rule
+    }
+
+    if (!cOpt) {
       await next()
       return
     }
 
     let key = ctx.identifier
-    if (rule.key) {
-      if (typeof rule.key === 'function') key = rule.key(ctx)
-      else key = rule.key
+    if (cOpt.key) {
+      if (typeof cOpt.key === 'function') key = cOpt.key(ctx)
+      else key = cOpt.key
     } else if (opts?.keyFactory) {
       key = opts.keyFactory(ctx)
     }
 
-    const strategy = rule.strategy || Strategy.NETWORK_ONLY
+    const strategy = cOpt.strategy || Strategy.NETWORK_ONLY
 
     const opt: StrategyOptions = {
       key,
