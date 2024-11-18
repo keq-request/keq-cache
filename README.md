@@ -64,7 +64,7 @@ request
 | Name           | Default                           | Description                                                                                                       |
 | :------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
 | storage        | [Storage.Memory](#memory)         | [See More](#storage)                                                                                              |
-| maxStorageSize | 2MB                               | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
+| maxStorageSize | Infinity                          | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
 | threshold      | `0.2 * maxStorageSize`            | If a request size is greater than threshold, it will not be cached. Don't be larger than `maxStorageSize`         |
 | Eviction       | [VolatileTTL](#volatilettl)       | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
 | keyFactory     | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache                           |

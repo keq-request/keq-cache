@@ -14,7 +14,7 @@ export interface KeqCacheParameters {
   /**
    * byte
    *
-   * @default 2MB
+   * @default Infinity
    */
   maxStorageSize?: number
 
@@ -34,5 +34,5 @@ export interface KeqCacheParameters {
    */
   keyFactory?: (context: KeqContext) => string
 
-  rules: KeqCacheRule[]
+  rules?: KeqCacheRule[]
 }
