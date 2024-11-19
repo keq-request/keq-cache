@@ -3,10 +3,10 @@ import { BaseStorage } from '../base-storage'
 import { Promisable } from 'type-fest'
 import { CacheEntry } from '~/types/cache-entry'
 
-import { RandomIndexedDBStorage } from './random-indexed-db-storage'
-import { LFUIndexedDBStorage } from './lfu-indexed-db-storage'
-import { LRUIndexedDBStorage } from './lru-indexed-db-storage'
-import { TTLIndexedDBStorage } from './ttl-indexed-db-storage'
+import { RandomIndexedDBStorage } from './random-indexed-db-storage.js'
+import { LFUIndexedDBStorage } from './lfu-indexed-db-storage.js'
+import { LRUIndexedDBStorage } from './lru-indexed-db-storage.js'
+import { TTLIndexedDBStorage } from './ttl-indexed-db-storage.js'
 
 
 export class IndexedDBStorage extends BaseStorage {

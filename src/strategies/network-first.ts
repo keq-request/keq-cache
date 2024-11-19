@@ -1,6 +1,6 @@
 import { KeqContext, KeqNext, createResponseProxy } from 'keq'
-import { StrategyOptions } from '~/types/strategies-options'
-import { getResponseBytes } from '~/utils/get-response-bytes'
+import { StrategyOptions } from '~/types/strategies-options.js'
+import { getResponseBytes } from '~/utils/get-response-bytes.js'
 
 export async function networkFirst(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
   const { key, storage } = opts

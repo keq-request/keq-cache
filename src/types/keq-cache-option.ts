@@ -1,5 +1,5 @@
 import { KeqContext } from 'keq'
-import { Strategy } from '~/constants/strategy'
+import { Strategy } from '~/constants/strategy.js'
 
 
 export interface KeqCacheOption {

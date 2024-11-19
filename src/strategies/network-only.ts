@@ -1,5 +1,5 @@
 import { KeqContext, KeqNext } from 'keq'
-import { StrategyOptions } from '~/types/strategies-options'
+import { StrategyOptions } from '~/types/strategies-options.js'
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,6 +1,6 @@
 import { createResponseProxy, KeqContext, KeqNext } from 'keq'
-import { StrategyOptions } from '~/types/strategies-options'
-import { getResponseBytes } from '~/utils/get-response-bytes'
+import { StrategyOptions } from '~/types/strategies-options.js'
+import { getResponseBytes } from '~/utils/get-response-bytes.js'
 
 
 export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {

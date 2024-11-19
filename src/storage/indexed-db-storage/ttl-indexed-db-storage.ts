@@ -1,4 +1,4 @@
-import { BaseIndexedDBStorage } from './base-indexed-db-storage'
+import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 
 export class TTLIndexedDBStorage extends BaseIndexedDBStorage {

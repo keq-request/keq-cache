@@ -1,8 +1,8 @@
 import { KeqContext } from 'keq'
-import { KeqCacheRule } from './keq-cache-rule'
 import { Class } from 'type-fest'
-import { Eviction } from '~/constants/eviction'
-import { BaseStorage } from '~/storage/base-storage'
+import { KeqCacheRule } from './keq-cache-rule.js'
+import { Eviction } from '~/constants/eviction.js'
+import { BaseStorage } from '~/storage/base-storage.js'
 
 
 export interface KeqCacheParameters {

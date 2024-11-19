@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { CacheEntry } from '~/types/cache-entry.js'
-import { BaseMemoryStorage } from './base-memory-storage'
+import { BaseMemoryStorage } from './base-memory-storage.js'
 
 
 export class LRUMemoryStorage extends BaseMemoryStorage {

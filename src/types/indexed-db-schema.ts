@@ -1,6 +1,6 @@
 import { DBSchema } from 'idb'
-import { IndexedDBEntry } from './indexed-db-entry'
-import { IndexedDBResponse } from './indexed-db-response'
+import { IndexedDBEntry } from './indexed-db-entry.js'
+import { IndexedDBResponse } from './indexed-db-response.js'
 
 
 export interface IndexedDBSchema extends DBSchema {

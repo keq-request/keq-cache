@@ -1,5 +1,5 @@
 import { KeqContext } from 'keq'
-import { KeqCacheOption } from './keq-cache-option'
+import { KeqCacheOption } from './keq-cache-option.js'
 
 
 export interface KeqCacheRule extends KeqCacheOption {

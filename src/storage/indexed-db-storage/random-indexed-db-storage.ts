@@ -1,5 +1,5 @@
 import { random } from '~/utils/random'
-import { BaseIndexedDBStorage } from './base-indexed-db-storage'
+import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 
 export class RandomIndexedDBStorage extends BaseIndexedDBStorage {

@@ -1,4 +1,4 @@
-import { IndexedDBStorage } from '~/storage/indexed-db-storage/indexed-db-storage'
+import { IndexedDBStorage } from '~/storage/indexed-db-storage/indexed-db-storage.js'
 import { MemoryStorage } from '~/storage/memory-storage/memory-storage.js'
 
 
