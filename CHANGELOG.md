@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/keq-request/keq-cache/compare/v1.0.1...v1.0.2) (2024-11-19)
+
+
+### Bug Fixes
+
+* update import statements to include file extensions for esm ([49ed02f](https://github.com/keq-request/keq-cache/commit/49ed02f64e15f14a04c8f54281b913545db97af2))
+
 ## 1.0.1 (2024-11-18)
 
 
