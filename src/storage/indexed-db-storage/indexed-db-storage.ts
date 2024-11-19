@@ -1,7 +1,7 @@
-import { Eviction } from '~/constants/eviction'
-import { BaseStorage } from '../base-storage'
 import { Promisable } from 'type-fest'
-import { CacheEntry } from '~/types/cache-entry'
+import { Eviction } from '~/constants/eviction.js'
+import { BaseStorage } from '../base-storage.js'
+import { CacheEntry } from '~/types/cache-entry.js'
 
 import { RandomIndexedDBStorage } from './random-indexed-db-storage.js'
 import { LFUIndexedDBStorage } from './lfu-indexed-db-storage.js'

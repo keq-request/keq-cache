@@ -2,7 +2,7 @@ import { CacheEntry } from '~/types/cache-entry.js'
 import { BaseStorage } from '../base-storage.js'
 import { IDBPDatabase, IDBPTransaction, openDB } from 'idb'
 import dayjs from 'dayjs'
-import { IndexedDBSchema } from '~/types/indexed-db-schema'
+import { IndexedDBSchema } from '~/types/indexed-db-schema.js'
 
 
 export abstract class BaseIndexedDBStorage extends BaseStorage {

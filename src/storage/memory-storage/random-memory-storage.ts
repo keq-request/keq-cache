@@ -1,6 +1,6 @@
 import { CacheEntry } from '~/types/cache-entry.js'
 import { random } from '~/utils/random.js'
-import { BaseMemoryStorage } from './base-memory-storage'
+import { BaseMemoryStorage } from './base-memory-storage.js'
 
 
 export class RandomMemoryStorage extends BaseMemoryStorage {

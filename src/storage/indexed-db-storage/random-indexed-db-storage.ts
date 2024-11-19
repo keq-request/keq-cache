@@ -1,4 +1,4 @@
-import { random } from '~/utils/random'
+import { random } from '~/utils/random.js'
 import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 
