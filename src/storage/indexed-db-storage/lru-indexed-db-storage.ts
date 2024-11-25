@@ -3,7 +3,7 @@ import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 export class LRUIndexedDBStorage extends BaseIndexedDBStorage {
   async evict(size: number): Promise<void> {
-    const db = await this.getDB()
+    const db = await this.openDB()
 
     if (size < await this.getSizeUnoccupied()) return
 

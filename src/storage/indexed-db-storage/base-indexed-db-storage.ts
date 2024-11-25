@@ -9,7 +9,7 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   private tableName = 'keq_cache_indexed_db_storage'
   private db?: IDBPDatabase<IndexedDBSchema>
 
-  protected async getDB(): Promise<IDBPDatabase<IndexedDBSchema>> {
+  protected async openDB(): Promise<IDBPDatabase<IndexedDBSchema>> {
     if (this.db) return this.db
     const tableName = this.tableName
 
@@ -46,7 +46,7 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   protected async getSizeOccupied(): Promise<number> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     const entries = await db.getAll('entries')
     return entries.reduce((acc, entry) => acc + entry.size, 0)
   }
@@ -57,18 +57,18 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async length(): Promise<number> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     return db.count('entries')
   }
 
   async has(key: string): Promise<boolean> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     const item = await db.getKey('entries', key)
     return !!item
   }
 
   async get(key: string): Promise<CacheEntry | undefined> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     const entry = await db.get('entries', key)
     const res = await db.get('responses', key)
 
@@ -76,7 +76,7 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
 
     const response = new Response(res.responseBody, {
       status: res.responseStatus,
-      headers: res.responseHeaders,
+      headers: new Headers(res.responseHeaders),
       statusText: res.responseStatusText,
     })
 
@@ -84,20 +84,28 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async add(entry: CacheEntry): Promise<void> {
-    const db = await this.getDB()
     const { response, ...rest } = entry
     if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
 
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
-    await tx.objectStore('entries').add(rest)
-
-    await tx.objectStore('responses').add({
+    const value = {
       key: entry.key,
       responseBody: await response.arrayBuffer(),
-      responseHeaders: new Headers(response.headers),
+      responseHeaders: [...response.headers.entries()],
       responseStatus: response.status,
       responseStatusText: response.statusText,
-    })
+    }
+
+
+    const db = await this.openDB()
+    const tx = db.transaction(['entries', 'responses'], 'readwrite')
+    const eStore = await tx.objectStore('entries')
+    const resStore = await tx.objectStore('responses')
+
+    if (await eStore.get(entry.key)) await eStore.put(rest)
+    else await eStore.add(rest)
+
+    if (await resStore.get(entry.key)) await resStore.put(value)
+    else await resStore.add(value)
 
     await tx.done
   }
@@ -108,14 +116,14 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async remove(key: string): Promise<void> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     const tx = db.transaction(['entries', 'responses'], 'readwrite')
     await this.__remove__(tx, key)
     await tx.done
   }
 
   async update<T extends Exclude<keyof CacheEntry, 'response' | 'key'>>(key: string, prop: T, value: CacheEntry[T]): Promise<void> {
-    const db = await this.getDB()
+    const db = await this.openDB()
     const tx = db.transaction(['entries', 'responses'], 'readwrite')
 
     const item = await tx.objectStore('entries').get(key)
@@ -132,9 +140,10 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   protected async removeOutdated(): Promise<void> {
     const now = dayjs()
 
-    const db = await this.getDB()
+    const db = await this.openDB()
     const tx = db.transaction('entries', 'readwrite')
-    let cursor = await tx.store.index('expiredAt').openCursor(IDBKeyRange.upperBound(now.valueOf()))
+    let cursor = await tx.store.index('expiredAt')
+      .openCursor(IDBKeyRange.upperBound(now.valueOf()))
 
     while (cursor) {
       await cursor.delete()

@@ -1,7 +1,7 @@
 export interface IndexedDBResponse {
   key: string
   responseBody: ArrayBuffer
-  responseHeaders: Headers
+  responseHeaders: [string, string][]
   responseStatus: number
   responseStatusText: string
 }
