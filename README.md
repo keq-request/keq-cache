@@ -8,6 +8,12 @@
 [![license](https://img.shields.io/npm/l/keq-cache.svg?logo=github&style=for-the-badge)][npm]
 [![Codecov](https://img.shields.io/codecov/c/gh/keq-request/keq-cache?logo=codecov&token=PLF0DT6869&style=for-the-badge)](https://codecov.io/gh/keq-request/keq-cache)
 
+## Why Need This
+
+[SW MDN]: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
+
+This is a simple alternative to [Service Worker][SW MDN] for projects that cannot enable [Service Worker][SW MDN]. No need to manually write cache code, just configure the cache strategy.
+
 ## Usage
 
 <!-- prettier-ignore -->
