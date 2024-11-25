@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/keq-request/keq-cache/compare/v1.0.3...v1.0.4) (2024-11-25)
+
+
+### Bug Fixes
+
+* indexed-db not work ([187ed1f](https://github.com/keq-request/keq-cache/commit/187ed1ff399ca681a683c2b4d615963aced202b8))
+
 ## [1.0.3](https://github.com/keq-request/keq-cache/compare/v1.0.2...v1.0.3) (2024-11-19)
 
 
