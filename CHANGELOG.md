@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/keq-request/keq-cache/compare/v1.0.5...v1.0.6) (2025-04-16)
+
+
+### Bug Fixes
+
+* cannot find idb package ([b33e267](https://github.com/keq-request/keq-cache/commit/b33e267b7eb845e9e78c2ccb5d2a33db0ee7973a))
+
 ## [1.0.5](https://github.com/keq-request/keq-cache/compare/v1.0.4...v1.0.5) (2025-04-16)
 
 
