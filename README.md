@@ -40,6 +40,7 @@ request
           pattern: (ctx) => ctx.request.method === "get",
           strategy: Strategy.STALE_WHILE_REVALIDATE,
           ttl: 5 * 60 * 1000,
+          key: (ctx) => ctx.request.__url__.href,
         },
       ],
     })
