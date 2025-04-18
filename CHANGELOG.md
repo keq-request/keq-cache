@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/keq-request/keq-cache/compare/v1.0.6...v1.1.0) (2025-04-18)
+
+
+### Features
+
+* add onNetworkResponse event ([d9b94d0](https://github.com/keq-request/keq-cache/commit/d9b94d0e5d3dd172d48c8228ba51ad32d1eeee41))
+
 ## [1.0.6](https://github.com/keq-request/keq-cache/compare/v1.0.5...v1.0.6) (2025-04-16)
 
 
