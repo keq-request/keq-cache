@@ -18,6 +18,11 @@ export async function networkFirst(ctx: KeqContext, next: KeqNext, opts: Strateg
         visitAt: new Date(),
         visitCount: 1,
       })
+
+      if (opts.onNetworkResponse) {
+        const cache = await storage.get(key)
+        opts.onNetworkResponse(ctx.response.clone(), cache?.response.clone())
+      }
     }
   } catch (err) {
     const cache = await storage.get(key)

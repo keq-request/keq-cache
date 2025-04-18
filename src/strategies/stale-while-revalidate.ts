@@ -8,6 +8,7 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
 
   const cache = await storage.get(key)
   if (cache) {
+    const cacheResponseProxy = createResponseProxy(cache.response)
     Object.defineProperty(ctx, 'res', {
       get() {
         return cache.response
@@ -22,12 +23,16 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
           visitAt: new Date(),
           visitCount: 1,
         })
+
+        if (opts.onNetworkResponse) {
+          opts.onNetworkResponse(value.clone(), cacheResponseProxy.clone())
+        }
       },
     })
 
     Object.defineProperty(ctx, 'response', {
       get() {
-        return createResponseProxy(cache.response)
+        return cacheResponseProxy
       },
       set() {
         // ignore
@@ -40,6 +45,7 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
 
     setTimeout(async () => {
       try {
+        ctx.metadata.finished = false
         await next()
       } catch (err) {
         // ignore
@@ -58,6 +64,10 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
         visitAt: new Date(),
         visitCount: 1,
       })
+
+      if (opts.onNetworkResponse) {
+        opts.onNetworkResponse(ctx.response.clone())
+      }
     }
   }
 }

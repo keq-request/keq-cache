@@ -41,6 +41,10 @@ request
           strategy: Strategy.STALE_WHILE_REVALIDATE,
           ttl: 5 * 60 * 1000,
           key: (ctx) => ctx.request.__url__.href,
+          onNetworkResponse: (response, cachedResponse) => {
+            console.log('The network response: ', response)
+            console.log('The response that cache hit: ', cachedResponse)
+          }
         },
       ],
     })
@@ -69,17 +73,18 @@ request
 
 ## Configuration
 
-| Name           | Default                           | Description                                                                                                       |
-| :------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| storage        | [Storage.Memory](#memory)         | [See More](#storage)                                                                                              |
-| maxStorageSize | Infinity                          | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
-| threshold      | `0.2 * maxStorageSize`            | If a request size is greater than threshold, it will not be cached. Don't be larger than `maxStorageSize`         |
-| Eviction       | [VolatileTTL](#volatilettl)       | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
-| keyFactory     | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache                           |
-| rules.pattern  | -                                 |
-| rules.key      | -                                 | The cache key factory for the request match the rule.                                                             |
-| rules.strategy | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)                                         |
-| rules.ttl      | `Infinity`                        | cache time to live                                                                                                |
+| Name                    | Default                           | Description                                                                                                       |
+| :---------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| storage                 | [Storage.Memory](#memory)         | [See More](#storage)                                                                                              |
+| maxStorageSize          | Infinity                          | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
+| threshold               | `0.2 * maxStorageSize`            | If a request size is greater than threshold, it will not be cached. Don't be larger than `maxStorageSize`         |
+| Eviction                | [VolatileTTL](#volatilettl)       | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
+| keyFactory              | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache                           |
+| rules.pattern           | -                                 |
+| rules.key               | -                                 | The cache key factory for the request match the rule.                                                             |
+| rules.strategy          | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)                                         |
+| rules.ttl               | `Infinity`                        | cache time to live                                                                                                |
+| rules.onNetworkResponse | `undefined`                       | Callback invoke after network request finish.                                                                     |
 
 ## Storage
 

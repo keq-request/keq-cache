@@ -6,11 +6,14 @@ export async function cacheFirst(ctx: KeqContext, next: KeqNext, opts: StrategyO
   const { storage, key } = opts
 
   const cache = await storage.get(key)
+  let cacheResponseProxy: Response | undefined
 
   if (cache) {
     // hit cache
+    cacheResponseProxy = createResponseProxy(cache?.response)
+
     ctx.res = cache.response
-    ctx.response = createResponseProxy(cache.response)
+    ctx.response = cacheResponseProxy
     ctx.metadata.entryNextTimes = 1
     ctx.metadata.outNextTimes = 1
 
@@ -30,5 +33,9 @@ export async function cacheFirst(ctx: KeqContext, next: KeqNext, opts: StrategyO
       visitAt: new Date(),
       visitCount: 1,
     })
+
+    if (opts.onNetworkResponse) {
+      opts.onNetworkResponse(ctx.response.clone(), cacheResponseProxy?.clone())
+    }
   }
 }

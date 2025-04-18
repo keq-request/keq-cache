@@ -1,8 +1,9 @@
 import { KeqContext } from 'keq'
 import { Strategy } from '~/constants/strategy.js'
+import { KeqCacheEvents } from './keq-cache-events'
 
 
-export interface KeqCacheOption {
+export interface KeqCacheOption extends KeqCacheEvents {
   /**
    * Cache Key
    */

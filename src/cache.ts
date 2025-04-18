@@ -63,6 +63,7 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
     const opt: StrategyOptions = {
       key,
       storage,
+      onNetworkResponse: cOpt.onNetworkResponse,
     }
 
     if (strategy === Strategy.NETWORK_FIRST) {
