@@ -84,7 +84,8 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async add(entry: CacheEntry): Promise<void> {
-    const { response, ...rest } = entry
+    const { ...rest } = entry
+    const response = entry.response.clone()
     if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
 
     const value = {
