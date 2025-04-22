@@ -63,6 +63,7 @@ export function cache(opts?: KeqCacheParameters): KeqMiddleware {
     const opt: StrategyOptions = {
       key,
       storage,
+      exclude: cOpt.exclude,
       onNetworkResponse: cOpt.onNetworkResponse,
     }
 

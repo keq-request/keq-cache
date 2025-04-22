@@ -14,15 +14,17 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
         return cache.response
       },
       async set(value) {
-        storage.add({
-          key: key,
-          response: value,
-          size: await getResponseBytes(value),
-          createAt: new Date(),
-          expiredAt: undefined,
-          visitAt: new Date(),
-          visitCount: 1,
-        })
+        if (!opts.exclude || !(await opts.exclude(value))) {
+          storage.add({
+            key: key,
+            response: value,
+            size: await getResponseBytes(value),
+            createAt: new Date(),
+            expiredAt: undefined,
+            visitAt: new Date(),
+            visitCount: 1,
+          })
+        }
 
         if (opts.onNetworkResponse) {
           opts.onNetworkResponse(value.clone(), cacheResponseProxy.clone())
@@ -55,15 +57,17 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
     await next()
 
     if (ctx.response) {
-      storage.add({
-        key: key,
-        response: ctx.response,
-        size: await getResponseBytes(ctx.response),
-        createAt: new Date(),
-        expiredAt: undefined,
-        visitAt: new Date(),
-        visitCount: 1,
-      })
+      if (!opts.exclude || !(await opts.exclude(ctx.response))) {
+        storage.add({
+          key: key,
+          response: ctx.response,
+          size: await getResponseBytes(ctx.response),
+          createAt: new Date(),
+          expiredAt: undefined,
+          visitAt: new Date(),
+          visitCount: 1,
+        })
+      }
 
       if (opts.onNetworkResponse) {
         opts.onNetworkResponse(ctx.response.clone())

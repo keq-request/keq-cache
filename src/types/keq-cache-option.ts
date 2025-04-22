@@ -18,4 +18,9 @@ export interface KeqCacheOption extends KeqCacheEvents {
    * @default Infinity
    */
   ttl?: number
+
+  /**
+   * If exclude is true, the request will not be cached.
+   */
+  exclude?: (res: Response) => (Promise<boolean> | boolean)
 }

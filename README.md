@@ -41,6 +41,7 @@ request
           strategy: Strategy.STALE_WHILE_REVALIDATE,
           ttl: 5 * 60 * 1000,
           key: (ctx) => ctx.request.__url__.href,
+          exclude: response.status !== 200,
           onNetworkResponse: (response, cachedResponse) => {
             console.log('The network response: ', response)
             console.log('The response that cache hit: ', cachedResponse)
@@ -84,6 +85,7 @@ request
 | rules.key               | -                                 | The cache key factory for the request match the rule.                                                             |
 | rules.strategy          | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)                                         |
 | rules.ttl               | `Infinity`                        | cache time to live                                                                                                |
+| rules.exclude           | -                                 | If return true, the request will not be cached.                                                                   |
 | rules.onNetworkResponse | `undefined`                       | Callback invoke after network request finish.                                                                     |
 
 ## Storage
