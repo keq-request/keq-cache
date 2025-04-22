@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/keq-request/keq-cache/compare/v1.1.0...v1.2.0) (2025-04-22)
+
+
+### Features
+
+* add exclude options used exlcude the response should not be cached ([4f6aa79](https://github.com/keq-request/keq-cache/commit/4f6aa793b4aa671695ee1e792dcf1de83b66b37b))
+
+
+### Bug Fixes
+
+* response is consumed abnormally ([3b6d204](https://github.com/keq-request/keq-cache/commit/3b6d204f94982219e27f751b162396bd1ff27548))
+
 ## [1.1.0](https://github.com/keq-request/keq-cache/compare/v1.0.6...v1.1.0) (2025-04-18)
 
 
