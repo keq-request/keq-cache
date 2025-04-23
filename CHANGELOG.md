@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/keq-request/keq-cache/compare/v1.2.0...v1.2.1) (2025-04-23)
+
+
+### Bug Fixes
+
+* should not add proxy to indexed db ([02b5442](https://github.com/keq-request/keq-cache/commit/02b54429856f4e343cd04d98cfb78a1d99e31249))
+
 ## [1.2.0](https://github.com/keq-request/keq-cache/compare/v1.1.0...v1.2.0) (2025-04-22)
 
 
