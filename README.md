@@ -67,6 +67,7 @@ request
     cache: {
       strategy: Strategy.NETWORK_FIRST,
       key: 'custom-cache-key',
+      exclude: async response => response.status !== 200
       ttl: 1000,
     },
   })
