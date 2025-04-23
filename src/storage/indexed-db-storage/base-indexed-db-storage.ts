@@ -1,8 +1,11 @@
+import * as R from 'ramda'
 import { CacheEntry } from '~/types/cache-entry.js'
 import { BaseStorage } from '../base-storage.js'
 import { IDBPDatabase, IDBPTransaction, openDB } from 'idb'
 import dayjs from 'dayjs'
 import { IndexedDBSchema } from '~/types/indexed-db-schema.js'
+import { IndexedDBResponse } from '~/types/indexed-db-response.js'
+import { IndexedDBEntry } from '~/types/indexed-db-entry.js'
 
 
 export abstract class BaseIndexedDBStorage extends BaseStorage {
@@ -88,7 +91,9 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
     const response = entry.response.clone()
     if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
 
-    const value = {
+    const entryValue: IndexedDBEntry = R.omit(['response'], rest)
+
+    const responseValue: IndexedDBResponse = {
       key: entry.key,
       responseBody: await response.arrayBuffer(),
       responseHeaders: [...response.headers.entries()],
@@ -102,11 +107,11 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
     const eStore = await tx.objectStore('entries')
     const resStore = await tx.objectStore('responses')
 
-    if (await eStore.get(entry.key)) await eStore.put(rest)
-    else await eStore.add(rest)
+    if (await eStore.get(entry.key)) await eStore.put(entryValue)
+    else await eStore.add(entryValue)
 
-    if (await resStore.get(entry.key)) await resStore.put(value)
-    else await resStore.add(value)
+    if (await resStore.get(entry.key)) await resStore.put(responseValue)
+    else await resStore.add(responseValue)
 
     await tx.done
   }
