@@ -41,7 +41,7 @@ request
           strategy: Strategy.STALE_WHILE_REVALIDATE,
           ttl: 5 * 60 * 1000,
           key: (ctx) => ctx.request.__url__.href,
-          exclude: response.status !== 200,
+          exclude: async response => response.status !== 200,
           onNetworkResponse: (response, cachedResponse) => {
             console.log('The network response: ', response)
             console.log('The response that cache hit: ', cachedResponse)
