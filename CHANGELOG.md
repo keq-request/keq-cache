@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/keq-request/keq-cache/compare/v1.2.1...v1.2.2) (2025-04-27)
+
+
+### Performance Improvements
+
+* skip cache if indexed-db not work ([45ccbd8](https://github.com/keq-request/keq-cache/commit/45ccbd8d42ce7bf14fc03f98b7a8ce162c61e43d)), closes [#10](https://github.com/keq-request/keq-cache/issues/10)
+
 ## [1.2.1](https://github.com/keq-request/keq-cache/compare/v1.2.0...v1.2.1) (2025-04-23)
 
 
