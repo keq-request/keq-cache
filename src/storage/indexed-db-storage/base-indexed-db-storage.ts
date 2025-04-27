@@ -60,60 +60,76 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async length(): Promise<number> {
-    const db = await this.openDB()
-    return db.count('entries')
+    try {
+      const db = await this.openDB()
+      return db.count('entries')
+    } catch (error) {
+      return 0
+    }
   }
 
   async has(key: string): Promise<boolean> {
-    const db = await this.openDB()
-    const item = await db.getKey('entries', key)
-    return !!item
+    try {
+      const db = await this.openDB()
+      const item = await db.getKey('entries', key)
+      return !!item
+    } catch (error) {
+      return false
+    }
   }
 
   async get(key: string): Promise<CacheEntry | undefined> {
-    const db = await this.openDB()
-    const entry = await db.get('entries', key)
-    const res = await db.get('responses', key)
+    try {
+      const db = await this.openDB()
+      const entry = await db.get('entries', key)
+      const res = await db.get('responses', key)
 
-    if (!entry || !res) return
+      if (!entry || !res) return
 
-    const response = new Response(res.responseBody, {
-      status: res.responseStatus,
-      headers: new Headers(res.responseHeaders),
-      statusText: res.responseStatusText,
-    })
+      const response = new Response(res.responseBody, {
+        status: res.responseStatus,
+        headers: new Headers(res.responseHeaders),
+        statusText: res.responseStatusText,
+      })
 
-    return { ...entry, response }
+      return { ...entry, response }
+    } catch (error) {
+      return
+    }
   }
 
   async add(entry: CacheEntry): Promise<void> {
-    const { ...rest } = entry
-    const response = entry.response.clone()
-    if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
+    try {
+      const { ...rest } = entry
+      const response = entry.response.clone()
+      if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
 
-    const entryValue: IndexedDBEntry = R.omit(['response'], rest)
+      const entryValue: IndexedDBEntry = R.omit(['response'], rest)
 
-    const responseValue: IndexedDBResponse = {
-      key: entry.key,
-      responseBody: await response.arrayBuffer(),
-      responseHeaders: [...response.headers.entries()],
-      responseStatus: response.status,
-      responseStatusText: response.statusText,
+      const responseValue: IndexedDBResponse = {
+        key: entry.key,
+        responseBody: await response.arrayBuffer(),
+        responseHeaders: [...response.headers.entries()],
+        responseStatus: response.status,
+        responseStatusText: response.statusText,
+      }
+
+
+      const db = await this.openDB()
+      const tx = db.transaction(['entries', 'responses'], 'readwrite')
+      const eStore = await tx.objectStore('entries')
+      const resStore = await tx.objectStore('responses')
+
+      if (await eStore.get(entry.key)) await eStore.put(entryValue)
+      else await eStore.add(entryValue)
+
+      if (await resStore.get(entry.key)) await resStore.put(responseValue)
+      else await resStore.add(responseValue)
+
+      await tx.done
+    } catch (error) {
+      return
     }
-
-
-    const db = await this.openDB()
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
-    const eStore = await tx.objectStore('entries')
-    const resStore = await tx.objectStore('responses')
-
-    if (await eStore.get(entry.key)) await eStore.put(entryValue)
-    else await eStore.add(entryValue)
-
-    if (await resStore.get(entry.key)) await resStore.put(responseValue)
-    else await resStore.add(responseValue)
-
-    await tx.done
   }
 
   protected async __remove__(tx: IDBPTransaction<IndexedDBSchema, ('entries' | 'responses')[], 'readwrite'>, key: string): Promise<void> {
@@ -122,38 +138,50 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
   }
 
   async remove(key: string): Promise<void> {
-    const db = await this.openDB()
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
-    await this.__remove__(tx, key)
-    await tx.done
+    try {
+      const db = await this.openDB()
+      const tx = db.transaction(['entries', 'responses'], 'readwrite')
+      await this.__remove__(tx, key)
+      await tx.done
+    } catch (error) {
+      return
+    }
   }
 
   async update<T extends Exclude<keyof CacheEntry, 'response' | 'key'>>(key: string, prop: T, value: CacheEntry[T]): Promise<void> {
-    const db = await this.openDB()
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
+    try {
+      const db = await this.openDB()
+      const tx = db.transaction(['entries', 'responses'], 'readwrite')
 
-    const item = await tx.objectStore('entries').get(key)
-    if (!item) {
-      await tx.abort()
+      const item = await tx.objectStore('entries').get(key)
+      if (!item) {
+        await tx.abort()
+        return
+      }
+
+      item[prop] = value
+      await db.put('entries', item)
+      await tx.done
+    } catch (error) {
       return
     }
-
-    item[prop] = value
-    await db.put('entries', item)
-    await tx.done
   }
 
   protected async removeOutdated(): Promise<void> {
-    const now = dayjs()
+    try {
+      const now = dayjs()
 
-    const db = await this.openDB()
-    const tx = db.transaction('entries', 'readwrite')
-    let cursor = await tx.store.index('expiredAt')
-      .openCursor(IDBKeyRange.upperBound(now.valueOf()))
+      const db = await this.openDB()
+      const tx = db.transaction('entries', 'readwrite')
+      let cursor = await tx.store.index('expiredAt')
+        .openCursor(IDBKeyRange.upperBound(now.valueOf()))
 
-    while (cursor) {
-      await cursor.delete()
-      cursor = await cursor.continue()
+      while (cursor) {
+        await cursor.delete()
+        cursor = await cursor.continue()
+      }
+    } catch (error) {
+      return
     }
   }
 }
