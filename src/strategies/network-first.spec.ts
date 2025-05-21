@@ -2,13 +2,13 @@
 import { expect, test } from '@jest/globals'
 import { networkFirst } from './network-first'
 import { MemoryStorage } from '~/storage'
-import { Eviction } from '~/constants/eviction'
+import { Eviction } from '~/constants/eviction.enum'
 import { spyOn } from 'jest-mock'
 import { createKeqNext, createKeqContext } from '~~/__tests__/helpers'
 
 
 test('Strategies.NETWORK_FIRST', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.TTL)
+  const storage = new MemoryStorage({ size: 100, eviction: Eviction.TTL })
 
   spyOn(storage, 'add')
 

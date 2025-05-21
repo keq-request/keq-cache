@@ -17,7 +17,6 @@ export abstract class BaseMemoryStorage extends BaseStorage {
   }
 
   add(entry: CacheEntry): void {
-    if (entry.size > this.__threshold__) return
     if (entry.expiredAt) {
       this.volatile.set(entry.key, { ...entry, response: entry.response.clone() })
     } else {
@@ -25,6 +24,9 @@ export abstract class BaseMemoryStorage extends BaseStorage {
     }
 
     this.sizeOccupied += entry.size
+
+    this.debug('Entry Added: ', entry)
+    this.debug('Storage Size Occupied: ', this.sizeOccupied)
   }
 
   private find(key: string): CacheEntry | undefined {
@@ -42,11 +44,18 @@ export abstract class BaseMemoryStorage extends BaseStorage {
     else this.permanent.delete(key)
 
     this.sizeOccupied -= entry.size
+
+    this.debug('Entry Removed: ', entry)
+    this.debug('Storage Size Occupied: ', this.sizeOccupied)
   }
 
   get(key: string): CacheEntry | undefined {
     const entry = this.find(key)
     if (!entry) return undefined
+
+    if (!entry) this.debug(`Entry(${key}) Not Found`)
+    else this.debug(`Entry(${key}) Found: `, entry)
+
     return { ...entry, response: entry.response.clone() }
   }
 

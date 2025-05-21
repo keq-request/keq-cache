@@ -19,22 +19,24 @@ This is a simple alternative to [Service Worker][SW MDN] for projects that canno
 <!-- prettier-ignore -->
 ```typescript
 import { request } from "keq"
-import { cache, Strategy } from "keq-cache"
+import { cache, Strategy, MemoryStorage } from "keq-cache"
 
-request.use(cache())
+const storage = new MemoryStorage()
+request
+  .use(cache({ storage }))
 ```
 
-By default, [NetworkOnly Strategy](#networkonly) and [Memory Storage](#memory) will be used for all request. And you can customize the global configuration:
+If you are invoke `.use(cache({ ... }))` multiple times and want to share cache, the same storage instance should be used.
 
 <!-- prettier-ignore -->
 ```typescript
 import { request } from "keq"
-import { cache, Strategy } from "keq-cache"
+import { cache, Strategy, MemoryStorage } from "keq-cache"
 
 request
   .use(
     cache({
-      storage: Storage.MEMORY,
+      storage: new MemoryStorage(),
       rules: [
         {
           pattern: (ctx) => ctx.request.method === "get",
@@ -73,31 +75,37 @@ request
   })
 ```
 
-## Configuration
+## `cache(options)` Options
 
-| Name                    | Default                           | Description                                                                                                       |
-| :---------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| storage                 | [Storage.Memory](#memory)         | [See More](#storage)                                                                                              |
-| maxStorageSize          | Infinity                          | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
-| threshold               | `0.2 * maxStorageSize`            | If a request size is greater than threshold, it will not be cached. Don't be larger than `maxStorageSize`         |
-| Eviction                | [VolatileTTL](#volatilettl)       | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
-| keyFactory              | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache                           |
+| Name                    | Default                           | Description                                                                             |
+| :---------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------- |
+| storage                 | -                                 | [See More](#storage)                                                                    |
+| keyFactory              | `(context) => context.identifier` | The requested cache unique key factory. Requests with the same key will share the cache |
 | rules.pattern           | -                                 |
-| rules.key               | -                                 | The cache key factory for the request match the rule.                                                             |
-| rules.strategy          | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)                                         |
-| rules.ttl               | `Infinity`                        | cache time to live                                                                                                |
-| rules.exclude           | -                                 | If return true, the request will not be cached.                                                                   |
-| rules.onNetworkResponse | `undefined`                       | Callback invoke after network request finish.                                                                     |
+| rules.key               | -                                 | The cache key factory for the request match the rule.                                   |
+| rules.strategy          | [NetworkFirst](#networkfirst)     | how generates a response after receiving a fetch. [See More](#strategies)               |
+| rules.ttl               | `Infinity`                        | cache time to live                                                                      |
+| rules.exclude           | -                                 | If return true, the request will not be cached.                                         |
+| rules.onNetworkResponse | `undefined`                       | Callback invoke after network request finish.                                           |
 
 ## Storage
 
-### `Storage.MEMORY`
+Following are options available for each storage:
 
-Store the cache in memory and make it invalid after the page is refreshed.
+| Name     | Default                     | Description                                                                                                       |
+| :------- | :-------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| size     | `Infinity`                  | Maximum storage space occupied by the cache. If exceeded, some cache will be removed according to the `Eviction`. |
+| eviction | [VolatileTTL](#volatilettl) | Eviction policies when memory is insufficient. [See More](#eviction)                                              |
 
-### `Storage.INDEXED_DB`
+- `new MemoryStorage()`
 
-Storing the cache in IndexedBD that avoid cache invalid after refresh pages.
+  Store the cache in memory and make it invalid after the page is refreshed.
+
+- `new IndexedDBStorage({ name?: string })`
+
+  Storing the cache in IndexedBD that avoid cache invalid after refresh pages.
+
+  Unlike memory storage, **the data are shared between `IndexedDBStorage` with same `name`**(`name` is part of the table name).
 
 ## Strategies
 

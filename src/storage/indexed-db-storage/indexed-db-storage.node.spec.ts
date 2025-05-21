@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals'
 import { IndexedDBStorage } from './indexed-db-storage'
-import { Eviction } from '~/constants/eviction'
+import { Eviction } from '~/constants/eviction.enum'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 import { beforeEach } from 'node:test'
 import { openDB } from 'idb'
@@ -13,7 +13,10 @@ beforeEach(async () => {
 })
 
 test('new IndexedDBStorage(100, 20, Eviction.RANDOM)', async () => {
-  const storage = new IndexedDBStorage(100, 20, Eviction.RANDOM)
+  const storage = new IndexedDBStorage({
+    size: 100,
+    eviction: Eviction.RANDOM,
+  })
 
   const response = new Response('hello world', { status: 200 })
 

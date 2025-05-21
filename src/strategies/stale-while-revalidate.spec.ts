@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from '~/storage'
-import { Eviction } from '~/constants/eviction'
+import { Eviction } from '~/constants/eviction.enum'
 import { spyOn } from 'jest-mock'
 import { createKeqNext, createKeqContext, sleep } from '~~/__tests__/helpers'
 import { staleWhileRevalidate } from './stale-while-revalidate'
 
 
 test('Strategies.StaleWhileRevalidate', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.TTL)
+  const storage = new MemoryStorage({ size: 100, eviction: Eviction.TTL })
 
   spyOn(storage, 'add')
 

@@ -1,10 +1,7 @@
 import type { Keq, KeqMiddleware } from 'keq'
 import { KeqCacheOption } from './types/keq-cache-option.js'
 import { KeqCacheParameters } from './types/keq-cache-parameters.js'
-import { MemoryStorage } from './storage/index.js'
-import { Eviction } from './constants/eviction.js'
-import { BaseStorage } from './storage/base-storage.js'
-import { Strategy } from './constants/strategy.js'
+import { Strategy } from './constants/strategy.enum.js'
 import { KeqCacheRule } from './types/keq-cache-rule.js'
 import { cacheFirst } from './strategies/cache-first.js'
 import { networkFirst } from './strategies/network-first.js'
@@ -16,21 +13,16 @@ import { StrategyOptions } from './types/strategies-options.js'
 declare module 'keq' {
   export interface KeqOptions<T> {
     /**
-     * 是否静默弹窗提示错误
+     * [keq-cache](https://github.com/keq-request/keq-cache)
      */
     cache(option: KeqCacheOption): Keq<T>
   }
 }
 
 
-export function cache(opts?: KeqCacheParameters): KeqMiddleware {
-  const StorageClass = opts?.storage || MemoryStorage
-  const maxStorageSize = opts?.maxStorageSize || Infinity
-  let threshold = Infinity
-  if (opts?.threshold) threshold = opts.threshold
-  if (opts?.maxStorageSize) threshold = opts.maxStorageSize * 0.2
+export function cache(opts: KeqCacheParameters): KeqMiddleware {
+  const storage = opts.storage
 
-  const storage: BaseStorage = new StorageClass(maxStorageSize, threshold, opts?.eviction || Eviction.TTL)
   const rules: KeqCacheRule[] = opts?.rules || []
 
   return async function cache(ctx, next) {

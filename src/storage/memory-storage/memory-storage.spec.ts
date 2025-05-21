@@ -1,11 +1,12 @@
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from './memory-storage'
-import { Eviction } from '~/constants/eviction'
+import { Eviction } from '~/constants/eviction.enum'
 import { getResponseBytes } from '~/utils/get-response-bytes'
 
 
-test('new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)', async () => {
-  const storage = new MemoryStorage(Infinity, Infinity, Eviction.TTL)
+test('new MemoryStorage({ eviction: Eviction.VOLATILE_TTL })', async () => {
+  const storage = new MemoryStorage({ eviction: Eviction.TTL })
+
   const response = new Response('hello world', { status: 200 })
 
   await storage.add({
@@ -31,7 +32,42 @@ test('new MemoryStorage(Infinity, Infinity, Eviction.VOLATILE_TTL)', async () =>
 
   await storage.remove('key')
   expect(await storage.has('key')).toBeFalsy()
+})
 
-  // @ts-ignore
-  expect(() => new MemoryStorage(Infinity, Infinity, 'xxxx')).toThrowError()
+test('new MemoryStorage({ eviction: "xxxx" })', async () => {
+  expect(() => new MemoryStorage({
+    size: Infinity,
+    // @ts-ignore
+    eviction: 'xxxx',
+  })).toThrowError()
+})
+
+
+test('MemoryStorage Isolation', async () => {
+  const s1 = new MemoryStorage({ eviction: Eviction.TTL })
+  const s2 = new MemoryStorage({ eviction: Eviction.TTL })
+
+  const response = new Response('hello world', { status: 200 })
+  const entry = {
+    createAt: new Date(),
+    visitAt: new Date(),
+    visitCount: 1,
+    response,
+    size: await getResponseBytes(response.clone()),
+  }
+
+  await s1.add({
+    key: 's1-key',
+    ...entry,
+  })
+
+  await s2.add({
+    key: 's2-key',
+    ...entry,
+  })
+
+  expect(await s1.get('s1-key')).toBeDefined()
+  expect(await s2.get('s2-key')).toBeDefined()
+  expect(await s1.get('s2-key')).toBeUndefined()
+  expect(await s2.get('s1-key')).toBeUndefined()
 })

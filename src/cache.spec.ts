@@ -2,7 +2,7 @@ import { expect, jest, test } from '@jest/globals'
 import { Mock } from 'jest-mock'
 import { createRequest } from 'keq'
 import { cache } from './cache'
-import { Strategy } from './constants/strategy'
+import { Strategy } from './constants/strategy.enum'
 import { MemoryStorage } from './storage'
 
 
@@ -10,7 +10,7 @@ test('Strategies.NETWORK_ONLY', async () => {
   const mockedFetch = global.fetch as Mock<typeof global.fetch>
   const request = createRequest()
 
-  request.use(cache())
+  request.use(cache({ storage: new MemoryStorage() }))
 
   const body1 = await request
     .get('/cat')
@@ -31,6 +31,7 @@ test('Strategies.CATCH_FIRST', async () => {
   const request = createRequest()
 
   request.use(cache({
+    storage: new MemoryStorage(),
     keyFactory: (ctx) => ctx.request.__url__.href,
     rules: [{
       pattern: /\/cat/,
@@ -64,7 +65,7 @@ test('Strategies.NETWORK_FIRST', async () => {
 
   request.use(cache({
     keyFactory: (ctx) => ctx.request.__url__.href,
-    storage: MemoryStorage,
+    storage: new MemoryStorage(),
     rules: [{
       pattern: /\/cat/,
       strategy: Strategy.NETWORK_FIRST,
@@ -90,7 +91,7 @@ test.only('Strategies.STALE_WHILE_REVALIDATE', async () => {
 
   request.use(cache({
     keyFactory: (ctx) => ctx.request.__url__.href,
-    storage: MemoryStorage,
+    storage: new MemoryStorage(),
     rules: [{
       pattern: /\/cat/,
       strategy: Strategy.STALE_WHILE_REVALIDATE,

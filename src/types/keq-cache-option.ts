@@ -1,5 +1,5 @@
 import { KeqContext } from 'keq'
-import { Strategy } from '~/constants/strategy.js'
+import { Strategy } from '~/constants/strategy.enum.js'
 import { KeqCacheEvents } from './keq-cache-events'
 
 

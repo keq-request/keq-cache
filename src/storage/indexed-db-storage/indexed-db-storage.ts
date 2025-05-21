@@ -1,5 +1,5 @@
 import { Promisable } from 'type-fest'
-import { Eviction } from '~/constants/eviction.js'
+import { Eviction } from '~/constants/eviction.enum.js'
 import { BaseStorage } from '../base-storage.js'
 import { CacheEntry } from '~/types/cache-entry.js'
 
@@ -7,24 +7,25 @@ import { RandomIndexedDBStorage } from './random-indexed-db-storage.js'
 import { LFUIndexedDBStorage } from './lfu-indexed-db-storage.js'
 import { LRUIndexedDBStorage } from './lru-indexed-db-storage.js'
 import { TTLIndexedDBStorage } from './ttl-indexed-db-storage.js'
+import { IndexedDbStorageOptions } from '~/types/storage-options.js'
 
 
 export class IndexedDBStorage extends BaseStorage {
   private storage: BaseStorage
 
-  constructor(size: number, threshold: number, eviction: Eviction) {
-    super(size, threshold, eviction)
+  constructor(options?: IndexedDbStorageOptions) {
+    super(options)
 
-    if (eviction === Eviction.RANDOM) {
-      this.storage = new RandomIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.LFU) {
-      this.storage = new LFUIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.LRU) {
-      this.storage = new LRUIndexedDBStorage(size, threshold, eviction)
-    } else if (eviction === Eviction.TTL) {
-      this.storage = new TTLIndexedDBStorage(size, threshold, eviction)
+    if (this.__eviction__ === Eviction.RANDOM) {
+      this.storage = new RandomIndexedDBStorage(this.__options__)
+    } else if (this.__eviction__ === Eviction.LFU) {
+      this.storage = new LFUIndexedDBStorage(this.__options__)
+    } else if (this.__eviction__ === Eviction.LRU) {
+      this.storage = new LRUIndexedDBStorage(this.__options__)
+    } else if (this.__eviction__ === Eviction.TTL) {
+      this.storage = new TTLIndexedDBStorage(this.__options__)
     } else {
-      throw TypeError(`Not Supported Eviction: ${String(eviction!)}`)
+      throw TypeError(`Not Supported Eviction: ${String(this.__eviction__!)}`)
     }
   }
 
@@ -33,7 +34,6 @@ export class IndexedDBStorage extends BaseStorage {
   }
 
   add(entry: CacheEntry): Promisable<void> {
-    if (entry.size > this.__threshold__) return
     return this.storage.add(entry)
   }
 

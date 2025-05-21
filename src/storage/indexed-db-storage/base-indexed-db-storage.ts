@@ -6,11 +6,25 @@ import dayjs from 'dayjs'
 import { IndexedDBSchema } from '~/types/indexed-db-schema.js'
 import { IndexedDBResponse } from '~/types/indexed-db-response.js'
 import { IndexedDBEntry } from '~/types/indexed-db-entry.js'
+import { IndexedDbStorageOptions } from '~/types/storage-options.js'
 
 
 export abstract class BaseIndexedDBStorage extends BaseStorage {
-  private tableName = 'keq_cache_indexed_db_storage'
+  private __name__: string
   private db?: IDBPDatabase<IndexedDBSchema>
+
+  get tableName(): string {
+    return `keq_cache_indexed_db_storage__${this.__name__}`
+  }
+
+  constructor(options?: IndexedDbStorageOptions) {
+    super(options)
+    if (options?.name === 'default') {
+      throw new TypeError('[keq-cache] IndexedDBStorage name cannot be "default"')
+    }
+
+    this.__name__ = options?.name || 'default'
+  }
 
   protected async openDB(): Promise<IDBPDatabase<IndexedDBSchema>> {
     if (this.db) return this.db

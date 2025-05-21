@@ -1,11 +1,14 @@
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from './memory-storage'
-import { Eviction } from '~/constants/eviction'
+import { Eviction } from '~/constants/eviction.enum'
 import { appendExpiringItem, appendPermanentItem } from '~~/__tests__/helpers'
 
 
-test('new MemoryStorage(100, 20, Eviction.TTL)', async () => {
-  const storage = new MemoryStorage(100, 20, Eviction.TTL)
+test('new MemoryStorage({ size: 100, eviction: Eviction.TTL })', async () => {
+  const storage = new MemoryStorage({
+    size: 100,
+    eviction: Eviction.TTL,
+  })
 
   await appendExpiringItem(storage, 10)
 
