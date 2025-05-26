@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/keq-request/keq-cache/compare/v1.2.2...v2.0.0) (2025-05-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* maxStorageSize and threshold is removed, please use size parameter of Storage
+
+### Features
+
+* custom storage support ([bebd310](https://github.com/keq-request/keq-cache/commit/bebd3106c735fcb5b12142a3d1c19025806a2098))
+
+
+### Bug Fixes
+
+* memory storage does not specify the isolation scope ([99da6d7](https://github.com/keq-request/keq-cache/commit/99da6d7c23b2b91eb12075195a5d55ae1021fab0))
+
 ## [1.2.2](https://github.com/keq-request/keq-cache/compare/v1.2.1...v1.2.2) (2025-04-27)
 
 
