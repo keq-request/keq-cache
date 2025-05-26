@@ -92,3 +92,4 @@ request
 
 - [Storage Usage](./docs/storage.md)
 - [Strategies Usage](./docs/strategies.md)
+- [Usage Example](./docs/example.md)
