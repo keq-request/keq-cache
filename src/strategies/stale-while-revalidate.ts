@@ -1,6 +1,6 @@
 import { createResponseProxy, KeqContext, KeqNext } from 'keq'
+import { CacheEntry } from '~/cache-entry'
 import { StrategyOptions } from '~/types/strategies-options.js'
-import { getResponseBytes } from '~/utils/get-response-bytes.js'
 
 
 export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
@@ -15,15 +15,11 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
       },
       async set(value) {
         if (!opts.exclude || !(await opts.exclude(value))) {
-          storage.add({
+          storage.set(await CacheEntry.build({
             key: key,
             response: value,
-            size: await getResponseBytes(value),
-            createAt: new Date(),
-            expiredAt: undefined,
-            visitAt: new Date(),
-            visitCount: 1,
-          })
+            ttl: opts.ttl,
+          }))
         }
 
         if (opts.onNetworkResponse) {
@@ -58,15 +54,11 @@ export async function staleWhileRevalidate(ctx: KeqContext, next: KeqNext, opts:
 
     if (ctx.response) {
       if (!opts.exclude || !(await opts.exclude(ctx.response))) {
-        storage.add({
+        storage.set(await CacheEntry.build({
           key: key,
           response: ctx.response,
-          size: await getResponseBytes(ctx.response),
-          createAt: new Date(),
-          expiredAt: undefined,
-          visitAt: new Date(),
-          visitCount: 1,
-        })
+          ttl: opts.ttl,
+        }))
       }
 
       if (opts.onNetworkResponse) {

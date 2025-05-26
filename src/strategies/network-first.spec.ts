@@ -10,7 +10,7 @@ import { createKeqNext, createKeqContext } from '~~/__tests__/helpers'
 test('Strategies.NETWORK_FIRST', async () => {
   const storage = new MemoryStorage({ size: 100, eviction: Eviction.TTL })
 
-  spyOn(storage, 'add')
+  spyOn(storage, 'set')
 
   const ctx1 = createKeqContext()
   const next1 = createKeqNext(ctx1, '1')
@@ -44,7 +44,7 @@ test('Strategies.NETWORK_FIRST', async () => {
     storage,
   })).rejects.toThrowError()
 
-  expect(storage.add).toBeCalledTimes(2)
+  expect(storage.set).toBeCalledTimes(2)
 
   expect(await ctx1.response?.text()).toEqual('1')
   expect(await ctx2.response?.text()).toEqual('2')

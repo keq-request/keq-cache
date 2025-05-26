@@ -1,93 +1,93 @@
 import dayjs from 'dayjs'
-import { CacheEntry } from '~/types/cache-entry.js'
-import { BaseStorage } from '../base-storage.js'
+import * as R from 'ramda'
+import { InternalStorage } from '../internal-stoarge/internal-storage.js'
+import { CacheEntry } from '~/cache-entry/cache-entry.js'
+import { MemoryStorageSize } from './types/memory-storage-size.js'
 
 
-export abstract class BaseMemoryStorage extends BaseStorage {
-  protected permanent = new Map<string, CacheEntry>()
-  protected volatile = new Map<string, CacheEntry>()
-  protected sizeOccupied = 0
+export abstract class BaseMemoryStorage extends InternalStorage {
+  protected storage = new Map<string, CacheEntry>()
 
-  protected get sizeUnoccupied(): number {
-    return this.__size__ - this.sizeOccupied
-  }
+  protected visitTimeRecords = new Map<string, Date>()
+  protected visitCountRecords = new Map<string, number>()
 
-  length(): number {
-    return [...this.volatile.keys(), ...this.permanent.keys()].length
-  }
+  protected get size(): MemoryStorageSize {
+    const used = R.sum(R.pluck('size', [...this.storage.values()]))
+    const free = this.__size__ > used ? this.__size__ - used : 0
 
-  add(entry: CacheEntry): void {
-    if (entry.expiredAt) {
-      this.volatile.set(entry.key, { ...entry, response: entry.response.clone() })
-    } else {
-      this.permanent.set(entry.key, { ...entry, response: entry.response.clone() })
+    return {
+      used,
+      free,
     }
-
-    this.sizeOccupied += entry.size
-
-    this.debug('Entry Added: ', entry)
-    this.debug('Storage Size Occupied: ', this.sizeOccupied)
-  }
-
-  private find(key: string): CacheEntry | undefined {
-    let entry = this.volatile.get(key)
-    if (!entry) entry = this.permanent.get(key)
-
-    return entry
-  }
-
-  remove(key: string): void {
-    const entry = this.find(key)
-    if (!entry) return
-
-    if (entry.expiredAt) this.volatile.delete(key)
-    else this.permanent.delete(key)
-
-    this.sizeOccupied -= entry.size
-
-    this.debug('Entry Removed: ', entry)
-    this.debug('Storage Size Occupied: ', this.sizeOccupied)
   }
 
   get(key: string): CacheEntry | undefined {
-    const entry = this.find(key)
-    if (!entry) return undefined
+    this.evictExpired()
+    const entry = this.storage.get(key)
 
-    if (!entry) this.debug(`Entry(${key}) Not Found`)
-    else this.debug(`Entry(${key}) Found: `, entry)
+    this.visitCountRecords.set(key, (this.visitCountRecords.get(key) ?? 0) + 1)
+    this.visitTimeRecords.set(key, new Date())
 
-    return { ...entry, response: entry.response.clone() }
+    if (!entry) this.debug((log) => log(`Entry(${key}) Not Found`))
+    else this.debug((log) => log(`Entry(${key}) Found: `, entry))
+
+    return entry?.clone()
   }
 
-  has(key: string): boolean {
-    return !!this.find(key)
+  set(value: CacheEntry): void {
+    if (!this.evict(value.size)) {
+      this.debug((log) => log('Storage Size Not Enough: ', this.size.free, ' < ', value.size))
+      return
+    }
+
+    this.storage.set(value.key, value)
+    this.visitTimeRecords.set(value.key, new Date())
+    this.visitCountRecords.set(value.key, (this.visitCountRecords.get(value.key) ?? 0))
+
+    this.debug((log) => log('Entry Added: ', value))
+    this.debug((log) => log('Storage Size: ', this.size))
   }
 
-  update<T extends Exclude<keyof CacheEntry, 'response' | 'key'>>(key: string, prop: T, value: CacheEntry[T]): void {
-    const entry = this.find(key)
+  remove(key: string): void {
+    const entry = this.storage.get(key)
     if (!entry) return
-    entry[prop] = value
+
+    this.storage.delete(key)
+    this.visitCountRecords.delete(key)
+    this.visitTimeRecords.delete(key)
+
+    this.debug((log) => log('Entry Removed: ', entry))
+    this.debug((log) => log('Storage Size: ', this.size))
   }
 
-  protected removeOutdated(): void {
+  private lastEvictExpiredTime = dayjs()
+
+  /**
+   * @zh 清除过期的缓存
+   */
+  protected evictExpired(): void {
     const now = dayjs()
-    for (const [key, entry] of this.volatile.entries()) {
+
+    if (now.diff(this.lastEvictExpiredTime, 'second') < 1) return
+
+    for (const [key, entry] of this.storage.entries()) {
       if (entry.expiredAt && now.isAfter(entry.expiredAt)) {
         this.remove(key)
       }
     }
   }
 
-  protected abstract free(arr: CacheEntry[], size: number): void
+  /**
+   * @en Evict the storage to make sure the size is enough
+   * @zh 清除缓存以确保有足够的空间
+   *
+   * @return {boolean} - is evicted successfully
+   */
+  protected evict(expectSize: number): boolean {
+    this.evictExpired()
+    const size = this.size
 
-  evict(size: number): void {
-    if ((this.__size__ - this.sizeOccupied) > size) return
-
-    this.removeOutdated()
-    if ((this.__size__ - this.sizeOccupied) > size) return
-
-    const items = [...this.volatile.values(), ...this.permanent.values()]
-    this.free(items, size - (this.__size__ - this.sizeOccupied))
+    return size.free >= expectSize
   }
 }
 

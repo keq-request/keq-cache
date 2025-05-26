@@ -1,9 +1,10 @@
+import * as R from 'ramda'
 import { expect, test } from '@jest/globals'
-import { IndexedDBStorage } from './indexed-db-storage'
-import { Eviction } from '~/constants/eviction.enum'
-import { appendExpiringItem } from '~~/__tests__/helpers'
 import { beforeEach } from 'node:test'
 import { openDB } from 'idb'
+import { createResponse } from '~~/__tests__/helpers'
+import { CacheEntry } from '~/cache-entry'
+import { LFUIndexedDBStorage } from './lfu-indexed-db-storage'
 
 
 beforeEach(async () => {
@@ -12,14 +13,35 @@ beforeEach(async () => {
   await db.deleteObjectStore('responses')
 })
 
-test('new IndexedDBStorage(100, 20, Eviction.LFU)', async () => {
-  const storage = new IndexedDBStorage({
-    size: 100,
-    eviction: Eviction.LFU,
+test('new LFUIndexedDBStorage({ size: 100 })', async () => {
+  const storage = new LFUIndexedDBStorage({ size: 100 })
+
+  for (const i of R.range(0, 10)) {
+    const response = createResponse({ size: 10 })
+    const entry = await CacheEntry.build({
+      key: `temp_${i}`,
+      response,
+    })
+    await storage.set(entry)
+  }
+
+  for (const i of R.range(0, 10)) {
+    expect(await storage.get(`temp_${i}`)).toBeDefined()
+  }
+
+  for (const i of R.range(0, 9)) {
+    await storage.get(`temp_${i}`)
+  }
+
+  const another = await CacheEntry.build({
+    key: 'another',
+    response: createResponse({ size: 10 }),
   })
 
-  await appendExpiringItem(storage, 10)
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
+  await storage.set(another)
+  expect(await storage.get('another')).toBeDefined()
+  expect(await storage.get('temp_9')).toBeUndefined()
+  for (const i of R.range(0, 9)) {
+    expect(await storage.get(`temp_${i}`)).toBeDefined()
+  }
 })

@@ -15,6 +15,9 @@ export interface KeqCacheOption extends KeqCacheEvents {
   strategy: Strategy
 
   /**
+   * @en seconds
+   * @zh 秒
+   *
    * @default Infinity
    */
   ttl?: number

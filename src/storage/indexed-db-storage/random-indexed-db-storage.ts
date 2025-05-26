@@ -1,34 +1,45 @@
+import * as R from 'ramda'
 import { random } from '~/utils/random.js'
 import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 
 export class RandomIndexedDBStorage extends BaseIndexedDBStorage {
-  async evict(size: number): Promise<void> {
+  async evict(expectSize: number): Promise<boolean> {
+    await this.evictExpired()
+
+    const size = await this.getSize()
+    let deficitSize = expectSize - size.free
+    if (deficitSize <= 0) return true
+
+
     const db = await this.openDB()
 
-    if (size < await this.getSizeUnoccupied()) return
+    const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
 
-    await this.removeOutdated()
-    let sizeUnoccupied = await this.getSizeUnoccupied()
-    if (size < sizeUnoccupied) return
+    const metadataStore = tx.objectStore('metadata')
 
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
-    const entriesStore = tx.objectStore('entries')
+    const metadatas = await metadataStore.getAll()
+    const totalSize = R.sum(metadatas.map((m) => m.size))
 
-    const keys = await entriesStore.getAllKeys()
-
-    while (sizeUnoccupied < size && keys.length) {
-      const index = random(0, keys.length - 1)
-      const key = keys[index]
-      const item = await entriesStore.get(key)
-
-      if (item) {
-        await this.__remove__(tx, key)
-        keys.splice(index, 1)
-        sizeUnoccupied += item.size
-      }
+    if (totalSize < deficitSize) {
+      this.debug((log) => log(`Storage Size Not Enough, deficit size: ${deficitSize - totalSize}`))
+      await tx.abort()
+      return false
     }
 
+    const keys: string[] = []
+    while (deficitSize > 0 && metadatas.length) {
+      const index = random(0, metadatas.length - 1)
+
+      const metadata = metadatas[index]
+      deficitSize -= metadata.size
+      keys.push(metadata.key)
+      metadatas.splice(index, 1)
+    }
+
+    await this.__remove__(tx, keys)
+
     await tx.done
+    return true
   }
 }

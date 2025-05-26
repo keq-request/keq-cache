@@ -2,28 +2,44 @@ import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
 
 
 export class LRUIndexedDBStorage extends BaseIndexedDBStorage {
-  async evict(size: number): Promise<void> {
+  async evict(expectSize: number): Promise<boolean> {
+    await this.evictExpired()
+
+    const size = await this.getSize()
+    let deficitSize = expectSize - size.free
+    if (deficitSize <= 0) return true
+
     const db = await this.openDB()
 
-    if (size < await this.getSizeUnoccupied()) return
+    const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
+    const metadataStore = tx.objectStore('metadata')
+    const visitsStore = tx.objectStore('visits')
 
-    await this.removeOutdated()
-    let sizeUnoccupied = await this.getSizeUnoccupied()
-    if (size < sizeUnoccupied) return
 
-    const tx = db.transaction(['entries', 'responses'], 'readwrite')
-    const entriesStore = tx.objectStore('entries')
-    const responsesStore = tx.objectStore('responses')
+    const keys: string[] = []
+    let cursor = await visitsStore.index('lastVisitedAt').openCursor()
 
-    let cursor = await entriesStore.index('visitAt').openCursor()
+    while (deficitSize > 0 && cursor) {
+      const metadata = await metadataStore.get(cursor.value.key)
+      if (!metadata) {
+        await cursor.delete()
+        cursor = await cursor.continue()
+        continue
+      }
 
-    while (sizeUnoccupied < size && cursor) {
-      await cursor.delete()
-      await responsesStore.delete(cursor.value.key)
-      sizeUnoccupied += cursor.value.size
+      deficitSize -= metadata.size
+      keys.push(cursor.value.key)
       cursor = await cursor.continue()
     }
 
+    if (deficitSize > 0) {
+      this.debug((log) => log(`Storage Size Not Enough, deficit size: ${deficitSize}`))
+      await tx.abort()
+      return false
+    }
+
+    await this.__remove__(tx, keys)
     await tx.done
+    return true
   }
 }

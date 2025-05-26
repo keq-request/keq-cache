@@ -1,17 +1,28 @@
-import { CacheEntry } from '~/types/cache-entry.js'
 import { random } from '~/utils/random.js'
 import { BaseMemoryStorage } from './base-memory-storage.js'
 
 
 export class RandomMemoryStorage extends BaseMemoryStorage {
-  protected free(arr: CacheEntry[], size: number): void {
-    let freedSize = 0
-    while (freedSize < size && arr.length) {
-      const index = random(0, arr.length - 1)
-      const item = arr[index]
-      freedSize += item.size
-      arr.splice(index, 1)
-      this.remove(item.key)
+  protected evict(expectSize: number): boolean {
+    if (expectSize > this.__size__) {
+      this.debug((log) => log('Storage Size Not Enough: ', this.__size__, ' < ', expectSize))
+      return false
     }
+    this.evictExpired()
+
+    let deficitSize = expectSize - this.size.free
+    if (deficitSize <= 0) return true
+
+    const entries = [...this.storage.values()]
+
+    while (deficitSize > 0 && entries.length) {
+      const index = random(0, entries.length - 1)
+      const entry = entries[index]
+      deficitSize -= entry.size
+      entries.splice(index, 1)
+      this.remove(entry.key)
+    }
+
+    return true
   }
 }

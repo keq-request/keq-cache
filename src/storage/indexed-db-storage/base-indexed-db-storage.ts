@@ -1,47 +1,50 @@
 import * as R from 'ramda'
-import { CacheEntry } from '~/types/cache-entry.js'
-import { BaseStorage } from '../base-storage.js'
+import { InternalStorage } from '../internal-stoarge/internal-storage.js'
 import { IDBPDatabase, IDBPTransaction, openDB } from 'idb'
 import dayjs from 'dayjs'
-import { IndexedDBSchema } from '~/types/indexed-db-schema.js'
-import { IndexedDBResponse } from '~/types/indexed-db-response.js'
-import { IndexedDBEntry } from '~/types/indexed-db-entry.js'
-import { IndexedDbStorageOptions } from '~/types/storage-options.js'
+import { IndexedDBSchema } from '~/storage/indexed-db-storage/types/indexed-db-schema.js'
+import { IndexedDBEntryResponse } from '~/storage/indexed-db-storage/types/indexed-db-entry-response.js'
+import { IndexedDBEntryMetadata } from '~/storage/indexed-db-storage/types/indexed-db-entry-metadata.js'
+import { DEFAULT_TABLE_NAME } from './constants/default-table-name.js'
+import { CacheEntry } from '~/cache-entry/index.js'
+import { IndexedDBStorageSize } from './types/indexed-db-storage-size.js'
+import { BaseIndexedDbStorageOptions } from './types/base-indexed-db-storage-options.js'
 
 
-export abstract class BaseIndexedDBStorage extends BaseStorage {
-  private __name__: string
+export abstract class BaseIndexedDBStorage extends InternalStorage {
+  private readonly tableName: string = DEFAULT_TABLE_NAME
   private db?: IDBPDatabase<IndexedDBSchema>
 
-  get tableName(): string {
-    return `keq_cache_indexed_db_storage__${this.__name__}`
-  }
-
-  constructor(options?: IndexedDbStorageOptions) {
+  constructor(options?: BaseIndexedDbStorageOptions) {
     super(options)
-    if (options?.name === 'default') {
-      throw new TypeError('[keq-cache] IndexedDBStorage name cannot be "default"')
+    if (options?.tableName === DEFAULT_TABLE_NAME) {
+      throw new TypeError(`[keq-cache] IndexedDBStorage name cannot be "${DEFAULT_TABLE_NAME}"`)
     }
 
-    this.__name__ = options?.name || 'default'
+    this.tableName = options?.tableName || DEFAULT_TABLE_NAME
   }
 
   protected async openDB(): Promise<IDBPDatabase<IndexedDBSchema>> {
     if (this.db) return this.db
     const tableName = this.tableName
 
-    const db = await openDB<IndexedDBSchema>(tableName, 1, {
+    const db = await openDB<IndexedDBSchema>(tableName, 2, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains('entries')) {
-          const entriesStore = db.createObjectStore('entries', { keyPath: 'key' })
-          entriesStore.createIndex('visitAt', 'visitAt')
-          entriesStore.createIndex('visitCount', 'visitCount')
+        if (!db.objectStoreNames.contains('metadata')) {
+          const entriesStore = db.createObjectStore('metadata', { keyPath: 'key' })
+
           entriesStore.createIndex('expiredAt', 'expiredAt')
         }
 
-        if (!db.objectStoreNames.contains('responses')) {
-          const responsesStore = db.createObjectStore('responses', { keyPath: 'key' })
+        if (!db.objectStoreNames.contains('response')) {
+          const responsesStore = db.createObjectStore('response', { keyPath: 'key' })
           responsesStore.createIndex('responseStatus', 'responseStatus')
+        }
+
+        if (!db.objectStoreNames.contains('visits')) {
+          const visitsStore = db.createObjectStore('visits', { keyPath: 'key' })
+          visitsStore.createIndex('visitCount', 'visitCount')
+          visitsStore.createIndex('lastVisitedAt', 'lastVisitedAt')
         }
       },
 
@@ -62,65 +65,67 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
     return db
   }
 
-  protected async getSizeOccupied(): Promise<number> {
+  protected async getSize(): Promise<IndexedDBStorageSize> {
     const db = await this.openDB()
-    const entries = await db.getAll('entries')
-    return entries.reduce((acc, entry) => acc + entry.size, 0)
+    const items = await db.getAll('metadata')
+    const used = R.sum(items.map((entry) => entry.size))
+    const free = this.__size__ - used
+    return { used, free }
   }
 
-  protected async getSizeUnoccupied(): Promise<number> {
-    const sizeOccupied = await this.getSizeOccupied()
-    return this.__size__ - sizeOccupied
-  }
-
-  async length(): Promise<number> {
-    try {
-      const db = await this.openDB()
-      return db.count('entries')
-    } catch (error) {
-      return 0
-    }
-  }
-
-  async has(key: string): Promise<boolean> {
-    try {
-      const db = await this.openDB()
-      const item = await db.getKey('entries', key)
-      return !!item
-    } catch (error) {
-      return false
-    }
-  }
 
   async get(key: string): Promise<CacheEntry | undefined> {
+    await this.evictExpired()
+
     try {
       const db = await this.openDB()
-      const entry = await db.get('entries', key)
-      const res = await db.get('responses', key)
+      const dbMetadata = await db.get('metadata', key)
+      const dbResponse = await db.get('response', key)
+      const dbVisits = await db.get('visits', key)
 
-      if (!entry || !res) return
+      if (!dbMetadata || !dbResponse) return
 
-      const response = new Response(res.responseBody, {
-        status: res.responseStatus,
-        headers: new Headers(res.responseHeaders),
-        statusText: res.responseStatusText,
+      await db.put('visits', {
+        key: dbMetadata.key,
+        visitCount: dbVisits ? dbVisits.visitCount + 1 : 1,
+        lastVisitedAt: new Date(),
       })
 
-      return { ...entry, response }
+      const response = new Response(dbResponse.responseBody, {
+        status: dbResponse.responseStatus,
+        headers: new Headers(dbResponse.responseHeaders),
+        statusText: dbResponse.responseStatusText,
+      })
+
+      return await CacheEntry.build({
+        key: dbMetadata.key,
+        expiredAt: dbMetadata.expiredAt,
+        response,
+        size: dbMetadata.size,
+      })
     } catch (error) {
       return
     }
   }
 
-  async add(entry: CacheEntry): Promise<void> {
+  async set(entry: CacheEntry): Promise<void> {
     try {
-      const { ...rest } = entry
+      if (!await this.evict(entry.size)) {
+        const size = await this.getSize()
+        this.debug((log) => log(`Storage Size Not Enough: ${size.free} < ${entry.size}`))
+        return
+      }
+
+      const dbMetadata: IndexedDBEntryMetadata = {
+        key: entry.key,
+        size: entry.size,
+        expiredAt: entry.expiredAt,
+        visitedAt: new Date(),
+        visitCount: 0,
+      }
+
       const response = entry.response.clone()
-      if (!rest.expiredAt) rest.expiredAt = new Date(8640000000000000)
-
-      const entryValue: IndexedDBEntry = R.omit(['response'], rest)
-
-      const responseValue: IndexedDBResponse = {
+      const dbResponse: IndexedDBEntryResponse = {
         key: entry.key,
         responseBody: await response.arrayBuffer(),
         responseHeaders: [...response.headers.entries()],
@@ -128,17 +133,23 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
         responseStatusText: response.statusText,
       }
 
-
       const db = await this.openDB()
-      const tx = db.transaction(['entries', 'responses'], 'readwrite')
-      const eStore = await tx.objectStore('entries')
-      const resStore = await tx.objectStore('responses')
+      const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
+      const metadataStore = await tx.objectStore('metadata')
+      const responseStore = await tx.objectStore('response')
+      const visitsStore = await tx.objectStore('visits')
 
-      if (await eStore.get(entry.key)) await eStore.put(entryValue)
-      else await eStore.add(entryValue)
+      const dbVisits = (await visitsStore.get(entry.key)) || {
+        key: entry.key,
+        visitCount: 0,
+        lastVisitedAt: new Date(),
+      }
 
-      if (await resStore.get(entry.key)) await resStore.put(responseValue)
-      else await resStore.add(responseValue)
+      await Promise.all([
+        metadataStore.put(dbMetadata),
+        responseStore.put(dbResponse),
+        visitsStore.put(dbVisits),
+      ])
 
       await tx.done
     } catch (error) {
@@ -146,57 +157,76 @@ export abstract class BaseIndexedDBStorage extends BaseStorage {
     }
   }
 
-  protected async __remove__(tx: IDBPTransaction<IndexedDBSchema, ('entries' | 'responses')[], 'readwrite'>, key: string): Promise<void> {
-    await tx.objectStore('entries').delete(key)
-    await tx.objectStore('responses').delete(key)
+  protected async __remove__(tx: IDBPTransaction<IndexedDBSchema, ('metadata' | 'response' | 'visits')[], 'readwrite'>, keys: string[]): Promise<void> {
+    await Promise.all(
+      R.unnest(
+        keys.map((key) => [
+          tx.objectStore('metadata').delete(key),
+          tx.objectStore('response').delete(key),
+          tx.objectStore('visits').delete(key),
+        ]),
+      ),
+    )
   }
 
   async remove(key: string): Promise<void> {
     try {
       const db = await this.openDB()
-      const tx = db.transaction(['entries', 'responses'], 'readwrite')
-      await this.__remove__(tx, key)
+      const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
+      await this.__remove__(tx, [key])
       await tx.done
     } catch (error) {
       return
     }
   }
 
-  async update<T extends Exclude<keyof CacheEntry, 'response' | 'key'>>(key: string, prop: T, value: CacheEntry[T]): Promise<void> {
-    try {
-      const db = await this.openDB()
-      const tx = db.transaction(['entries', 'responses'], 'readwrite')
 
-      const item = await tx.objectStore('entries').get(key)
-      if (!item) {
-        await tx.abort()
-        return
-      }
+  private lastEvictExpiredTime = dayjs()
 
-      item[prop] = value
-      await db.put('entries', item)
-      await tx.done
-    } catch (error) {
-      return
-    }
-  }
+  /**
+   * @zh 清除过期的缓存
+   */
+  protected async evictExpired(): Promise<void> {
+    const now = dayjs()
+    if (now.diff(this.lastEvictExpiredTime, 'second') < 1) return
 
-  protected async removeOutdated(): Promise<void> {
     try {
       const now = dayjs()
 
       const db = await this.openDB()
-      const tx = db.transaction('entries', 'readwrite')
-      let cursor = await tx.store.index('expiredAt')
+      const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
+      const metadataStore = tx.objectStore('metadata')
+      // const responseStore = tx.objectStore('response')
+      // const visitsStore = tx.objectStore('visits')
+
+      let cursor = await metadataStore
+        .index('expiredAt')
         .openCursor(IDBKeyRange.upperBound(now.valueOf()))
 
+      const expiredKeys: string[] = []
       while (cursor) {
-        await cursor.delete()
-        cursor = await cursor.continue()
+        if (dayjs(cursor.value.expiredAt).isBefore(now)) {
+          expiredKeys.push(cursor.value.key)
+          cursor = await cursor.continue()
+        } else {
+          break
+        }
       }
+
+      await this.__remove__(tx, expiredKeys)
+
+      // await Promise.all([
+      //   ...expiredKeys.map((key) => metadataStore.delete(key)),
+      //   ...expiredKeys.map((key) => responseStore.delete(key)),
+      //   ...expiredKeys.map((key) => visitsStore.delete(key)),
+      // ])
+
+      await tx.done
     } catch (error) {
       return
     }
   }
+
+  protected abstract evict(expectSize: number): Promise<boolean>
 }
 

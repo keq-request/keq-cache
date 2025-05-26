@@ -1,45 +1,36 @@
 import { expect, test } from '@jest/globals'
 import { MemoryStorage } from './memory-storage'
 import { Eviction } from '~/constants/eviction.enum'
-import { getResponseBytes } from '~/utils/get-response-bytes'
+import { createResponse } from '~~/__tests__/helpers'
+import { CacheEntry } from '~/cache-entry'
 
 
-test('new MemoryStorage({ eviction: Eviction.VOLATILE_TTL })', async () => {
-  const storage = new MemoryStorage({ eviction: Eviction.TTL })
+test('new MemoryStorage()', async () => {
+  const storage = new MemoryStorage()
 
-  const response = new Response('hello world', { status: 200 })
-
-  await storage.add({
+  const response = createResponse({ size: 10 })
+  const entry = await CacheEntry.build({
     key: 'key',
-    createAt: new Date(),
-    visitAt: new Date(),
-    visitCount: 1,
     response,
-    size: await getResponseBytes(response.clone()),
   })
 
-  const cache = await storage.get('key')
+  await storage.set(entry)
+  const cache1 = await storage.get('key')
+  expect(cache1).toBeDefined()
 
-  expect(await cache?.response.text()).toBe('hello world')
-  expect(cache?.size).toBe('hello world'.length)
+  expect((await cache1?.response.text())?.length).toBe(10)
 
-  const notExistCache = await storage.get('not_exist_key')
-  expect(notExistCache).toBeUndefined()
+  // 验证多次使用 .get 获取同一个缓存的 Response 可以正常消费
+  const cache2 = await storage.get('key')
+  expect((await cache2?.response.text())?.length).toBe(10)
 
-  expect(await storage.has('key')).toBeTruthy()
-  await storage.update('key', 'visitCount', 10)
-  expect((await storage.get('key'))?.visitCount).toBe(10)
-
-  await storage.remove('key')
-  expect(await storage.has('key')).toBeFalsy()
+  storage.remove('key')
+  expect(storage.get('key')).toBeUndefined()
 })
 
 test('new MemoryStorage({ eviction: "xxxx" })', async () => {
-  expect(() => new MemoryStorage({
-    size: Infinity,
-    // @ts-ignore
-    eviction: 'xxxx',
-  })).toThrowError()
+  // @ts-ignore
+  expect(() => new MemoryStorage({ eviction: 'xxxx' })).toThrowError()
 })
 
 
@@ -47,27 +38,22 @@ test('MemoryStorage Isolation', async () => {
   const s1 = new MemoryStorage({ eviction: Eviction.TTL })
   const s2 = new MemoryStorage({ eviction: Eviction.TTL })
 
-  const response = new Response('hello world', { status: 200 })
-  const entry = {
-    createAt: new Date(),
-    visitAt: new Date(),
-    visitCount: 1,
-    response,
-    size: await getResponseBytes(response.clone()),
-  }
-
-  await s1.add({
-    key: 's1-key',
-    ...entry,
+  const entry1 = await CacheEntry.build({
+    key: 'entry_1',
+    response: createResponse({ size: 10 }),
+  })
+  const entry2 = await CacheEntry.build({
+    key: 'entry_2',
+    response: createResponse({ size: 10 }),
   })
 
-  await s2.add({
-    key: 's2-key',
-    ...entry,
-  })
 
-  expect(await s1.get('s1-key')).toBeDefined()
-  expect(await s2.get('s2-key')).toBeDefined()
-  expect(await s1.get('s2-key')).toBeUndefined()
-  expect(await s2.get('s1-key')).toBeUndefined()
+  await s1.set(entry1)
+  await s2.set(entry2)
+
+
+  expect(await s1.get('entry_1')).toBeDefined()
+  expect(await s2.get('entry_2')).toBeDefined()
+  expect(await s1.get('entry_2')).toBeUndefined()
+  expect(await s2.get('entry_1')).toBeUndefined()
 })

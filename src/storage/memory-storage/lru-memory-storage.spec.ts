@@ -1,14 +1,36 @@
+import * as R from 'ramda'
 import { expect, test } from '@jest/globals'
-import { MemoryStorage } from './memory-storage'
-import { Eviction } from '~/constants/eviction.enum'
-import { appendExpiringItem } from '~~/__tests__/helpers'
+import { createResponse, sleep } from '~~/__tests__/helpers'
+import { CacheEntry } from '~/cache-entry'
+import { LRUMemoryStorage } from './lru-memory-storage'
 
-test('new MemoryStorage({ size: 100, eviction: Eviction.LRU })', async () => {
-  const storage = new MemoryStorage({ size: 100, eviction: Eviction.LRU })
+test('new LRUMemoryStorage({ size: 100 })', async () => {
+  const storage = new LRUMemoryStorage({ size: 100 })
 
-  await appendExpiringItem(storage, 10)
+  for (const i of R.range(0, 10)) {
+    const response = createResponse({ size: 10 })
+    const entry = await CacheEntry.build({
+      key: `entry_${i}`,
+      response,
+    })
+    storage.set(entry)
+    storage.get(`entry_${i}`)
+  }
 
-  expect(await storage.length()).toBe(9)
-  const temp_0 = await storage.get('temp_0')
-  expect(temp_0).toBeUndefined()
+  for (const i of R.range(0, 10)) {
+    expect(storage.get(`entry_${i}`)).toBeDefined()
+    await sleep(2)
+  }
+
+  storage.get('entry_0')
+
+  const entry = await CacheEntry.build({
+    key: 'another',
+    response: createResponse({ size: 10 }),
+  })
+  storage.set(entry)
+
+  expect(storage.get('entry_0')).toBeDefined()
+  expect(storage.get('entry_1')).toBeUndefined()
+  expect(storage.get('another')).toBeDefined()
 })

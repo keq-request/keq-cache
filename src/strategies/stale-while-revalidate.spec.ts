@@ -10,7 +10,7 @@ import { staleWhileRevalidate } from './stale-while-revalidate'
 test('Strategies.StaleWhileRevalidate', async () => {
   const storage = new MemoryStorage({ size: 100, eviction: Eviction.TTL })
 
-  spyOn(storage, 'add')
+  spyOn(storage, 'set')
 
   const ctx1 = createKeqContext()
   const next1 = createKeqNext(ctx1, '1')
@@ -52,5 +52,5 @@ test('Strategies.StaleWhileRevalidate', async () => {
     storage,
   })).rejects.toThrowError()
 
-  expect(storage.add).toBeCalledTimes(2)
+  expect(storage.set).toBeCalledTimes(2)
 })

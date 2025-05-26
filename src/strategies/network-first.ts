@@ -1,6 +1,7 @@
 import { KeqContext, KeqNext, createResponseProxy } from 'keq'
+import { CacheEntry } from '~/cache-entry'
 import { StrategyOptions } from '~/types/strategies-options.js'
-import { getResponseBytes } from '~/utils/get-response-bytes.js'
+
 
 export async function networkFirst(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
   const { key, storage } = opts
@@ -10,15 +11,11 @@ export async function networkFirst(ctx: KeqContext, next: KeqNext, opts: Strateg
 
     if (ctx.response) {
       if (!opts.exclude || !(await opts.exclude(ctx.response))) {
-        storage.add({
+        storage.set(await CacheEntry.build({
           key: key,
           response: ctx.response,
-          size: await getResponseBytes(ctx.response),
-          createAt: new Date(),
-          expiredAt: undefined,
-          visitAt: new Date(),
-          visitCount: 1,
-        })
+          ttl: opts.ttl,
+        }))
       }
 
       if (opts.onNetworkResponse) {

@@ -1,15 +1,18 @@
 import { expect, test } from '@jest/globals'
 import { IndexedDBStorage } from './indexed-db-storage'
 import { Eviction } from '~/constants/eviction.enum'
-import { getResponseBytes } from '~/utils/get-response-bytes'
 import { beforeEach } from 'node:test'
 import { openDB } from 'idb'
+import { CacheEntry } from '~/cache-entry'
+import { createResponse } from '~~/__tests__/helpers'
+import { DEFAULT_TABLE_NAME } from './constants/default-table-name'
 
 
 beforeEach(async () => {
-  const db = await openDB('keq_cache_indexed_db_storage')
-  await db.deleteObjectStore('entries')
-  await db.deleteObjectStore('responses')
+  const db = await openDB(DEFAULT_TABLE_NAME)
+  await db.deleteObjectStore('metadata')
+  await db.deleteObjectStore('response')
+  await db.deleteObjectStore('visits')
 })
 
 test('new IndexedDBStorage(100, 20, Eviction.RANDOM)', async () => {
@@ -18,30 +21,19 @@ test('new IndexedDBStorage(100, 20, Eviction.RANDOM)', async () => {
     eviction: Eviction.RANDOM,
   })
 
-  const response = new Response('hello world', { status: 200 })
-
-  await storage.add({
+  const response = createResponse({ size: 10 })
+  const entry = await CacheEntry.build({
     key: 'key',
-    createAt: new Date(),
-    visitAt: new Date(),
-    visitCount: 1,
     response,
-    size: await getResponseBytes(response.clone()),
   })
+
+  await storage.set(entry)
 
   const cache = await storage.get('key')
 
-  expect(await cache?.response.text()).toBe('hello world')
-  expect(cache?.size).toBe('hello world'.length)
+  expect(cache).toBeDefined()
+  expect(await cache?.response.text()).toBe(await response.clone().text())
 
   const notExistCache = await storage.get('not_exist_key')
   expect(notExistCache).toBeUndefined()
-
-  expect(await storage.has('key')).toBeTruthy()
-  expect(await storage.has('not_exist_key')).toBeFalsy()
-
-  expect(await storage.length()).toBe(1)
-
-  await storage.remove('key')
-  expect(await storage.length()).toBe(0)
 })
