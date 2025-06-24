@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/keq-request/keq-cache/compare/v2.0.0...v2.1.0) (2025-06-24)
+
+
+### Features
+
+* custom strategy ([3053306](https://github.com/keq-request/keq-cache/commit/3053306cfa408b9ed72a1d5fbbb9d4bbdfe7e816))
+
 ## [2.0.0](https://github.com/keq-request/keq-cache/compare/v1.2.2...v2.0.0) (2025-05-26)
 
 
