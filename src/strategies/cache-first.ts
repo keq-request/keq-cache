@@ -1,39 +1,47 @@
-import { KeqContext, KeqNext, createResponseProxy } from 'keq'
+import { createResponseProxy } from 'keq'
 import { CacheEntry } from '~/cache-entry'
-import { StrategyOptions } from '~/types/strategies-options.js'
+import { KeqCacheStrategy } from '~/types/keq-cache-strategy'
 
-export async function cacheFirst(ctx: KeqContext, next: KeqNext, opts: StrategyOptions): Promise<void> {
-  const { storage, key } = opts
 
-  const cache = await storage.get(key)
-  let cacheResponseProxy: Response | undefined
+export const cacheFirst: KeqCacheStrategy = function (opts) {
+  const { storage, key, onNetworkResponse } = opts
 
-  if (cache) {
-    // hit cache
-    cacheResponseProxy = createResponseProxy(cache?.response)
+  return async function (ctx, next): Promise<void> {
+    const cache = await storage.get(key)
+    let cacheResponseProxy: Response | undefined
 
-    ctx.res = cache.response
-    ctx.response = cacheResponseProxy
-    ctx.metadata.entryNextTimes = 1
-    ctx.metadata.outNextTimes = 1
+    if (cache) {
+      // hit cache
 
-    return
-  }
+      // Create a Response that can be consumed multiple time
+      cacheResponseProxy = createResponseProxy(cache?.response)
 
-  await next()
+      ctx.res = cache.response
+      ctx.response = cacheResponseProxy
 
-  if (ctx.response) {
-    if (!opts.exclude || !(await opts.exclude(ctx.response))) {
-      storage.set(await CacheEntry.build({
-        key: key,
-        response: ctx.response,
-        expiredAt: undefined,
-        ttl: opts.ttl,
-      }))
+      // Avoid next function not called warning
+      ctx.metadata.entryNextTimes = 1
+      ctx.metadata.outNextTimes = 1
+
+      return
     }
 
-    if (opts.onNetworkResponse) {
-      opts.onNetworkResponse(ctx.response.clone(), cacheResponseProxy?.clone())
+    await next()
+
+    if (ctx.response) {
+      if (!opts.exclude || !(await opts.exclude(ctx.response))) {
+        // Set cache if not excluded
+        storage.set(await CacheEntry.build({
+          key: key,
+          response: ctx.response,
+          expiredAt: undefined,
+          ttl: opts.ttl,
+        }))
+      }
+
+      if (onNetworkResponse) {
+        onNetworkResponse(ctx.response.clone(), cacheResponseProxy?.clone())
+      }
     }
   }
 }

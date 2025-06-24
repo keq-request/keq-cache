@@ -1,18 +1,18 @@
-import { KeqContext } from 'keq'
-import { Strategy } from '~/constants/strategy.enum.js'
 import { KeqCacheEvents } from './keq-cache-events'
+import { KeqCacheStrategy } from './keq-cache-strategy'
+import { KeqCacheKey } from './keq-cache-key'
 
 
 export interface KeqCacheOption extends KeqCacheEvents {
   /**
    * Cache Key
    */
-  key?: string | ((context: KeqContext) => string)
+  key?: KeqCacheKey
 
   /**
    * @default Strategy.NETWORK_FIRST
    */
-  strategy: Strategy
+  strategy: KeqCacheStrategy
 
   /**
    * @en seconds

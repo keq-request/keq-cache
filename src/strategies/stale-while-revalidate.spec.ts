@@ -14,19 +14,20 @@ test('Strategies.StaleWhileRevalidate', async () => {
 
   const ctx1 = createKeqContext()
   const next1 = createKeqNext(ctx1, '1')
-  await staleWhileRevalidate(ctx1, next1, {
+  await staleWhileRevalidate({
     key: 'key1',
     storage,
-  })
+  })(ctx1, next1)
+
   expect(next1).toBeCalledTimes(1)
   expect(await ctx1.response?.text()).toEqual('1')
 
   const ctx2 = createKeqContext()
   const next2 = createKeqNext(ctx2, '2')
-  await staleWhileRevalidate(ctx2, next2, {
+  await staleWhileRevalidate({
     key: 'key1',
     storage,
-  })
+  })(ctx2, next2)
 
   expect(await ctx2.response?.text()).toEqual('1')
   // sleep 10ms
@@ -36,10 +37,10 @@ test('Strategies.StaleWhileRevalidate', async () => {
 
   const ctx3 = createKeqContext()
   const next3 = createKeqNext(ctx3, new Error('hello world'))
-  await staleWhileRevalidate(ctx3, next3, {
+  await staleWhileRevalidate({
     key: 'key1',
     storage,
-  })
+  })(ctx3, next3)
 
   await sleep(5)
   expect(next3).toBeCalledTimes(1)
@@ -47,10 +48,10 @@ test('Strategies.StaleWhileRevalidate', async () => {
 
   const ctx4 = createKeqContext()
   const next4 = createKeqNext(ctx4, new Error())
-  expect(staleWhileRevalidate(ctx4, next4, {
+  expect(staleWhileRevalidate({
     key: 'key2',
     storage,
-  })).rejects.toThrowError()
+  })(ctx4, next4)).rejects.toThrowError()
 
   expect(storage.set).toBeCalledTimes(2)
 })

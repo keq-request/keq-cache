@@ -1,12 +1,7 @@
 import type { Keq, KeqMiddleware } from 'keq'
 import { KeqCacheOption } from './types/keq-cache-option.js'
 import { KeqCacheParameters } from './types/keq-cache-parameters.js'
-import { Strategy } from './constants/strategy.enum.js'
 import { KeqCacheRule } from './types/keq-cache-rule.js'
-import { cacheFirst } from './strategies/cache-first.js'
-import { networkFirst } from './strategies/network-first.js'
-import { staleWhileRevalidate } from './strategies/stale-while-revalidate.js'
-import { networkOnly } from './strategies/network-only.js'
 import { StrategyOptions } from './types/strategies-options.js'
 
 
@@ -60,16 +55,18 @@ export function cache(opts: KeqCacheParameters): KeqMiddleware {
       onNetworkResponse: cOpt.onNetworkResponse,
     }
 
-    if (strategy === Strategy.NETWORK_FIRST) {
-      await networkFirst(ctx, next, opt)
-    } else if (strategy === Strategy.CATCH_FIRST) {
-      await cacheFirst(ctx, next, opt)
-    } else if (strategy === Strategy.STALE_WHILE_REVALIDATE) {
-      await staleWhileRevalidate(ctx, next, opt)
-    } else if (strategy === Strategy.NETWORK_ONLY) {
-      await networkOnly(ctx, next, opt)
-    } else {
-      throw new TypeError(`Unsupported strategy: ${String(strategy)}`)
-    }
+    await strategy(opt)(ctx, next)
+
+    // if (strategy === Strategy.NETWORK_FIRST) {
+    //   await networkFirst(opt)(ctx, next)
+    // } else if (strategy === Strategy.CATCH_FIRST) {
+    //   await cacheFirst(opt)(ctx, next)
+    // } else if (strategy === Strategy.STALE_WHILE_REVALIDATE) {
+    //   await staleWhileRevalidate(opt)(ctx, next)
+    // } else if (strategy === Strategy.NETWORK_ONLY) {
+    //   await networkOnly(opt)(ctx, next)
+    // } else {
+    //   throw new TypeError(`Unsupported strategy: ${String(strategy)}`)
+    // }
   }
 }
