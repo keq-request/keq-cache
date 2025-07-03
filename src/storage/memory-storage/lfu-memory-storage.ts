@@ -1,7 +1,12 @@
 import { BaseMemoryStorage } from './base-memory-storage.js'
+import { MemoryStorageOptions } from './types/memory-storage-options.js'
 
 
 export class LFUMemoryStorage extends BaseMemoryStorage {
+  constructor(options?: MemoryStorageOptions) {
+    super(options)
+  }
+
   // protected free(arr: CacheEntry[], size: number): void {
   //   let freedSize = 0
   //   arr.sort((a, b) => b.visitCount - a.visitCount)

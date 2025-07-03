@@ -1,8 +1,13 @@
 import { random } from '~/utils/random.js'
 import { BaseMemoryStorage } from './base-memory-storage.js'
+import { MemoryStorageOptions } from './types/memory-storage-options.js'
 
 
 export class RandomMemoryStorage extends BaseMemoryStorage {
+  constructor(options?: MemoryStorageOptions) {
+    super(options)
+  }
+
   protected evict(expectSize: number): boolean {
     if (expectSize > this.__size__) {
       this.debug((log) => log('Storage Size Not Enough: ', this.__size__, ' < ', expectSize))

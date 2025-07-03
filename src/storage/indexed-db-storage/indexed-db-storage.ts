@@ -1,6 +1,6 @@
 import { Promisable } from 'type-fest'
 import { Eviction } from '~/constants/eviction.enum.js'
-import { InternalStorage } from '../internal-stoarge/internal-storage.js'
+import { InternalStorage } from '../internal-storage/internal-storage.js'
 import { RandomIndexedDBStorage } from './random-indexed-db-storage.js'
 import { LFUIndexedDBStorage } from './lfu-indexed-db-storage.js'
 import { LRUIndexedDBStorage } from './lru-indexed-db-storage.js'

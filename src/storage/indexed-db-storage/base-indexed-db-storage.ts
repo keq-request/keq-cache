@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { InternalStorage } from '../internal-stoarge/internal-storage.js'
+import { InternalStorage } from '../internal-storage/internal-storage.js'
 import { IDBPDatabase, IDBPTransaction, openDB } from 'idb'
 import dayjs from 'dayjs'
 import { IndexedDBSchema } from '~/storage/indexed-db-storage/types/indexed-db-schema.js'
@@ -8,14 +8,14 @@ import { IndexedDBEntryMetadata } from '~/storage/indexed-db-storage/types/index
 import { DEFAULT_TABLE_NAME } from './constants/default-table-name.js'
 import { CacheEntry } from '~/cache-entry/index.js'
 import { IndexedDBStorageSize } from './types/indexed-db-storage-size.js'
-import { BaseIndexedDbStorageOptions } from './types/base-indexed-db-storage-options.js'
+import { IndexedDbStorageOptions } from './types/indexed-db-storage-options.js'
 
 
 export abstract class BaseIndexedDBStorage extends InternalStorage {
   private readonly tableName: string = DEFAULT_TABLE_NAME
   private db?: IDBPDatabase<IndexedDBSchema>
 
-  constructor(options?: BaseIndexedDbStorageOptions) {
+  constructor(options?: IndexedDbStorageOptions) {
     super(options)
     if (options?.tableName === DEFAULT_TABLE_NAME) {
       throw new TypeError(`[keq-cache] IndexedDBStorage name cannot be "${DEFAULT_TABLE_NAME}"`)

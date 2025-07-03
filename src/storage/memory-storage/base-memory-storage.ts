@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as R from 'ramda'
-import { InternalStorage } from '../internal-stoarge/internal-storage.js'
+import { InternalStorage } from '../internal-storage/internal-storage.js'
 import { CacheEntry } from '~/cache-entry/cache-entry.js'
 import { MemoryStorageSize } from './types/memory-storage-size.js'
 

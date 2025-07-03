@@ -1,7 +1,12 @@
 import { BaseIndexedDBStorage } from './base-indexed-db-storage.js'
+import { IndexedDbStorageOptions } from './types/indexed-db-storage-options.js'
 
 
 export class LFUIndexedDBStorage extends BaseIndexedDBStorage {
+  constructor(options?: IndexedDbStorageOptions) {
+    super(options)
+  }
+
   async evict(expectSize: number): Promise<boolean> {
     await this.evictExpired()
 

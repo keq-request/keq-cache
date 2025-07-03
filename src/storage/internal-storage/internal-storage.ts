@@ -1,4 +1,4 @@
-import { InternalStorageOptions } from '~/storage/internal-stoarge/types/storage-options'
+import { InternalStorageOptions } from '~/storage/internal-storage/types/storage-options'
 import { debug } from '~/utils/debug'
 import { KeqCacheStorage } from '../keq-cache-storage'
 
