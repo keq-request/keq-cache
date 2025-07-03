@@ -6,6 +6,7 @@ export {
   KeqCacheStorage as CacheStorage,
   IndexedDBStorage,
   MemoryStorage,
+  TierStorage,
 } from '~/storage/index.js'
 
 
