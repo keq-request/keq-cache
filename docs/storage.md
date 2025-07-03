@@ -46,6 +46,45 @@ const storage = new IndexedDBStorage({
 request.use(cache({ storage }));
 ```
 
+## MultiTierStorage
+
+`MultiTierStorage` provides a multi-tier caching solution that manages multiple storage instances in layers. This is useful for implementing a cache hierarchy where faster but smaller storages (like MemoryStorage) are used as the first tier, and slower but larger storages (like IndexedDBStorage) are used as higher tiers.
+
+| **Options** | **Default** | **Description**                                                                                                                                                                    |
+| :---------- | :---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| tiers       | -           | Array of storage instances ordered by performance (fastest first). The first storage in the array should be the fastest but typically smallest, subsequent storages can be larger. |
+
+### How it works
+
+- **Reading**: When retrieving cached data, `MultiTierStorage` searches from the lowest tier (fastest) to the highest tier (slowest). When data is found in a higher tier, it automatically syncs the data back to all lower tiers for faster future access.
+- **Writing**: When storing cached data, it writes to all tiers concurrently to ensure data consistency across all storage layers.
+- **Removing**: When removing cached data, it removes from all tiers concurrently.
+
+```typescript
+import { request } from "keq";
+import {
+  cache,
+  MemoryStorage,
+  IndexedDBStorage,
+  MultiTierStorage,
+} from "keq-cache";
+
+const memoryStorage = new MemoryStorage({
+  size: 5 * 1000 * 1000, // 5MB memory cache
+});
+
+const indexedDBStorage = new IndexedDBStorage({
+  size: 50 * 1000 * 1000, // 50MB persistent cache
+  tableName: "app-cache",
+});
+
+const storage = new MultiTierStorage({
+  tiers: [memoryStorage, indexedDBStorage], // Fast memory first, then persistent storage
+});
+
+request.use(cache({ storage }));
+```
+
 ## Custom Storage
 
 You can define your own `Storage`, if you want to use other ways to store cache (such as `SessionStorage`), Let's see an simple example:
