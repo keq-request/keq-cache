@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/keq-request/keq-cache/compare/v2.0.0...v2.1.0) (2025-07-03)
+
+
+### Features
+
+* add MultiTierStorage ([07a293b](https://github.com/keq-request/keq-cache/commit/07a293b75689c33ee05f31bd3446856244f83aa4))
+* add TierStorage ([02ceb48](https://github.com/keq-request/keq-cache/commit/02ceb4885f8a413fddd9fa732c0a2223a809b1f5))
+* custom strategy ([3053306](https://github.com/keq-request/keq-cache/commit/3053306cfa408b9ed72a1d5fbbb9d4bbdfe7e816))
+
+
+### Bug Fixes
+
+* wrong class name ([91989ea](https://github.com/keq-request/keq-cache/commit/91989eaeb1241d16128f08351f95b7b1b1c9fd22))
+
 ## [2.0.0](https://github.com/keq-request/keq-cache/compare/v1.2.2...v2.0.0) (2025-05-26)
 
 
