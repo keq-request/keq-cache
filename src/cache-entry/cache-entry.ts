@@ -1,6 +1,6 @@
-import { getResponseBytes } from '~/utils/get-response-bytes'
-import { CacheEntryOptions } from './types/cache-entry-options'
-import { CacheEntryBuildOptions } from './types/cache-entry-build-options'
+import { getResponseBytes } from '~/utils/get-response-bytes.js'
+import { CacheEntryOptions } from './types/cache-entry-options.js'
+import { CacheEntryBuildOptions } from './types/cache-entry-build-options.js'
 
 
 export class CacheEntry {
