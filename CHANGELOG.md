@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/keq-request/keq-cache/compare/v2.1.0...v2.1.1) (2025-07-11)
+
+
+### Bug Fixes
+
+* missing .js ext ([609631a](https://github.com/keq-request/keq-cache/commit/609631af7334fa41f42b9607137c61be1435e29e))
+
 ## [2.1.0](https://github.com/keq-request/keq-cache/compare/v2.0.0...v2.1.0) (2025-07-03)
 
 
