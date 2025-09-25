@@ -14,5 +14,9 @@ export const Strategy = {
   STALE_WHILE_REVALIDATE: staleWhileRevalidate,
   NETWORK_FIRST: networkFirst,
   NETWORK_ONLY: networkOnly,
+
+  // @deprecated please use CACHE_FIRST instead
   CATCH_FIRST: cacheFirst,
+
+  CACHE_FIRST: cacheFirst,
 }
