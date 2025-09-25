@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/keq-request/keq-cache/compare/v2.1.1...v2.1.2) (2025-09-25)
+
+
+### Bug Fixes
+
+* wrong esm import ([f10cf47](https://github.com/keq-request/keq-cache/commit/f10cf4769144a8c205209437388565f1dc7c7096))
+
 ## [2.1.1](https://github.com/keq-request/keq-cache/compare/v2.1.0...v2.1.1) (2025-07-11)
 
 
