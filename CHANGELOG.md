@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/keq-request/keq-cache/compare/v2.1.2...v2.1.3) (2025-09-25)
+
+
+### Bug Fixes
+
+* update Strategy enum to include CACHE_FIRST and deprecate CATCH_FIRST ([e69cef7](https://github.com/keq-request/keq-cache/commit/e69cef775af9bf0f2512102c0f3acf62b36dcef3))
+
 ## [2.1.2](https://github.com/keq-request/keq-cache/compare/v2.1.1...v2.1.2) (2025-09-25)
 
 
