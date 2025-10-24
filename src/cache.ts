@@ -53,6 +53,8 @@ export function cache(opts: KeqCacheParameters): KeqMiddleware {
       ttl: cOpt.ttl,
       exclude: cOpt.exclude,
       onNetworkResponse: cOpt.onNetworkResponse,
+      onCacheHit: cOpt.onCacheHit,
+      onCacheMiss: cOpt.onCacheMiss,
     }
 
     await strategy(opt)(ctx, next)

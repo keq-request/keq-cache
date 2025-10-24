@@ -87,6 +87,8 @@ request
 | rules.ttl               | `Infinity`                                        | cache time to live                                                                      |
 | rules.exclude           | -                                                 | If return true, the request will not be cached.                                         |
 | rules.onNetworkResponse | `undefined`                                       | Callback invoke after network request finish.                                           |
+| rules.onCacheHit        | `undefined`                                       | Callback invoke on cache hit.                                                           |
+| rules.onCacheMiss       | `undefined`                                       | Callback invoke on cache miss.                                                          |
 
 ## See More
 

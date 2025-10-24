@@ -27,12 +27,19 @@ export const networkFirst: KeqCacheStrategy = function (opts: StrategyOptions) {
       }
     } catch (err) {
       const cache = await storage.get(key)
-      if (!cache) throw err
+      if (!cache) {
+        if (opts.onCacheMiss) opts.onCacheMiss()
+        throw err
+      }
+
+      ctx.response = createResponseProxy(cache.response)
 
       ctx.res = cache.response
       ctx.response = createResponseProxy(cache.response)
       ctx.metadata.entryNextTimes = 1
       ctx.metadata.outNextTimes = 1
+
+      if (opts.onCacheHit) opts.onCacheHit(ctx.response)
     }
   }
 }

@@ -27,6 +27,8 @@ test('Strategies.NETWORK_ONLY', async () => {
 
 test('Strategies.CATCH_FIRST', async () => {
   const onNetworkResponse = jest.fn()
+  const onCacheHit = jest.fn()
+  const onCacheMiss = jest.fn()
   const mockedFetch = global.fetch as Mock<typeof global.fetch>
   const request = createRequest()
 
@@ -38,6 +40,8 @@ test('Strategies.CATCH_FIRST', async () => {
       strategy: Strategy.CATCH_FIRST,
       key: 'Strategies.CATCH_FIRST',
       onNetworkResponse,
+      onCacheHit,
+      onCacheMiss,
     }],
   }))
 
@@ -56,6 +60,8 @@ test('Strategies.CATCH_FIRST', async () => {
   expect(mockedFetch).toBeCalledTimes(2)
   expect(onNetworkResponse).toBeCalledTimes(1)
   expect(onNetworkResponse.mock.calls[0][1]).toBeUndefined()
+  expect(onCacheMiss).toBeCalledTimes(1)
+  expect(onCacheHit).toBeCalledTimes(1)
 })
 
 test('Strategies.NETWORK_FIRST', async () => {
@@ -88,6 +94,8 @@ test.only('Strategies.STALE_WHILE_REVALIDATE', async () => {
   const mockedFetch = global.fetch as Mock<typeof global.fetch>
   const request = createRequest()
   const onNetworkResponse = jest.fn()
+  const onCacheHit = jest.fn()
+  const onCacheMiss = jest.fn()
 
   request.use(cache({
     keyFactory: (ctx) => ctx.request.__url__.href,
@@ -97,6 +105,8 @@ test.only('Strategies.STALE_WHILE_REVALIDATE', async () => {
       strategy: Strategy.STALE_WHILE_REVALIDATE,
       key: 'Strategies.STALE_WHILE_REVALIDATE',
       onNetworkResponse,
+      onCacheHit,
+      onCacheMiss,
     }],
   }))
 
@@ -114,4 +124,6 @@ test.only('Strategies.STALE_WHILE_REVALIDATE', async () => {
   expect(onNetworkResponse).toBeCalledTimes(2)
   expect(onNetworkResponse.mock.calls[0][1]).toBeUndefined()
   expect(onNetworkResponse.mock.calls[1][1]).toBeInstanceOf(Response)
+  expect(onCacheMiss).toBeCalledTimes(1)
+  expect(onCacheHit).toBeCalledTimes(1)
 })

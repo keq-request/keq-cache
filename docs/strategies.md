@@ -50,8 +50,12 @@ const MyStrategy: KeqCacheStrategy = function (opt) {
       ctx.metadata.entryNextTimes = 1;
       ctx.metadata.outNextTimes = 1;
 
+      if (opts.onCacheHit) opts.onCacheHit(cacheResponseProxy);
+
       return;
     }
+
+    if (opts.onCacheMiss) opts.onCacheMiss();
 
     // Call `next()`, if the cache is not hit
     await next();
