@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import type { Keq, KeqMiddleware } from 'keq'
 import { KeqCacheOption } from './types/keq-cache-option.js'
 import { KeqCacheParameters } from './types/keq-cache-parameters.js'
@@ -21,16 +22,18 @@ export function cache(opts: KeqCacheParameters): KeqMiddleware {
   const rules: KeqCacheRule[] = opts?.rules || []
 
   return async function cache(ctx, next) {
-    let cOpt: KeqCacheOption | undefined = ctx.options.cache
+    let cOpt: KeqCacheOption | undefined
 
-    if (!cOpt) {
-      const rule = rules.find((rule) => {
-        if (rule.pattern === undefined || rule.pattern === true) return true
-        if (typeof rule.pattern === 'function') return rule.pattern(ctx)
-        return rule.pattern.test(ctx.request.__url__.href)
-      })
+    const rule = rules.find((rule) => {
+      if (rule.pattern === undefined || rule.pattern === true) return true
+      if (typeof rule.pattern === 'function') return rule.pattern(ctx)
+      return rule.pattern.test(ctx.request.__url__.href)
+    })
 
-      if (rule) cOpt = rule
+    if (rule) cOpt = rule
+
+    if (ctx.options.cache && !R.isEmpty(ctx.options.cache)) {
+      cOpt = R.mergeRight(cOpt || {}, ctx.options.cache)
     }
 
     if (!cOpt) {
