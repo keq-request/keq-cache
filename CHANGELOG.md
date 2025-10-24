@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.0](https://github.com/keq-request/keq-cache/compare/v2.1.3...v2.2.0) (2025-10-24)
+
+
+### Features
+
+* add onCacheHit and onCacheMiss hook ([b8e0a3d](https://github.com/keq-request/keq-cache/commit/b8e0a3d5268398320e5ff80428492eccb20d2d6f))
+
+
+### Bug Fixes
+
+* global configuration is not be inherited if use .options ([35a973c](https://github.com/keq-request/keq-cache/commit/35a973c45858aedcac5a08fdec6fb3e78fde316a))
+
+
+### Performance Improvements
+
+* rules.pattern accept boolean and default true ([270425d](https://github.com/keq-request/keq-cache/commit/270425d992c3b5b5c30e0644ffa3482d44019751))
+
 ## [2.1.3](https://github.com/keq-request/keq-cache/compare/v2.1.2...v2.1.3) (2025-09-25)
 
 
