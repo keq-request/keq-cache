@@ -25,6 +25,7 @@ export function cache(opts: KeqCacheParameters): KeqMiddleware {
 
     if (!cOpt) {
       const rule = rules.find((rule) => {
+        if (rule.pattern === undefined || rule.pattern === true) return true
         if (typeof rule.pattern === 'function') return rule.pattern(ctx)
         return rule.pattern.test(ctx.request.__url__.href)
       })

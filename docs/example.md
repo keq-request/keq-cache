@@ -70,7 +70,6 @@ function swr(): KeqMiddleware {
     storage,
     rules: [
       {
-        pattern: () => true,
         strategy: Strategy.STALE_WHILE_REVALIDATE,
         ttl: 5 * 60 * 1000,
         key: (ctx) => ctx.request.__url__.href,

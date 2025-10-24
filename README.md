@@ -81,7 +81,7 @@ request
 | :---------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------- |
 | storage                 | -                                                 | [See More](./docs/storage.md)                                                           |
 | keyFactory              | `(context) => context.identifier`                 | The requested cache unique key factory. Requests with the same key will share the cache |
-| rules.pattern           | -                                                 |
+| rules.pattern           | true                                              | Control which requests can hit this cache rule.                                         |
 | rules.key               | -                                                 | The cache key factory for the request match the rule.                                   |
 | rules.strategy          | [NetworkFirst](./docs/strategies.md#networkfirst) | how generates a response after receiving a fetch. [See More](./docs/strategies.md)      |
 | rules.ttl               | `Infinity`                                        | cache time to live                                                                      |
