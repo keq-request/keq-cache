@@ -15,7 +15,7 @@ request.use(
           ctx.request.method === "get" &&
           ctx.request.url.pathname === "/example",
         strategy: Strategy.STALE_WHILE_REVALIDATE,
-        ttl: 5 * 60 * 1000,
+        ttl: 5 * 60,
         key: (ctx) => ctx.request.__url__.href,
         exclude: async (response) => response.status !== 200,
       },
@@ -47,7 +47,7 @@ request
       strategy: Strategy.STALE_WHILE_REVALIDATE,
       key: "custom-cache-key",
       exclude: async (response) => response.status !== 200,
-      ttl: 1000,
+      ttl: 1,
     },
   });
 
@@ -71,7 +71,7 @@ function swr(): KeqMiddleware {
     rules: [
       {
         strategy: Strategy.STALE_WHILE_REVALIDATE,
-        ttl: 5 * 60 * 1000,
+        ttl: 5 * 60,
         key: (ctx) => ctx.request.__url__.href,
         exclude: async (response) => response.status !== 200,
       },

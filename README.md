@@ -41,7 +41,7 @@ request
         {
           pattern: (ctx) => ctx.request.method === "get",
           strategy: Strategy.STALE_WHILE_REVALIDATE,
-          ttl: 5 * 60 * 1000,
+          ttl: 5 * 60, // 5 minute
           key: (ctx) => ctx.request.__url__.href,
           exclude: async response => response.status !== 200,
           onNetworkResponse: (response, cachedResponse) => {
@@ -70,7 +70,7 @@ request
       strategy: Strategy.NETWORK_FIRST,
       key: 'custom-cache-key',
       exclude: async response => response.status !== 200
-      ttl: 1000,
+      ttl: 1,
     },
   })
 ```
@@ -84,7 +84,7 @@ request
 | rules.pattern           | true                                              | Control which requests can hit this cache rule.                                         |
 | rules.key               | -                                                 | The cache key factory for the request match the rule.                                   |
 | rules.strategy          | [NetworkFirst](./docs/strategies.md#networkfirst) | how generates a response after receiving a fetch. [See More](./docs/strategies.md)      |
-| rules.ttl               | `Infinity`                                        | cache time to live                                                                      |
+| rules.ttl               | `Infinity`                                        | cache time to live in seconds.                                                          |
 | rules.exclude           | -                                                 | If return true, the request will not be cached.                                         |
 | rules.onNetworkResponse | `undefined`                                       | Callback invoke after network request finish.                                           |
 | rules.onCacheHit        | `undefined`                                       | Callback invoke on cache hit.                                                           |
