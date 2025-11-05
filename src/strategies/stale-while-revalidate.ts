@@ -46,7 +46,7 @@ export const staleWhileRevalidate: KeqCacheStrategy = function (opts: StrategyOp
       ctx.metadata.entryNextTimes = 1
       ctx.metadata.outNextTimes = 1
 
-      if (opts.onCacheHit) opts.onCacheHit(cacheResponseProxy)
+      if (opts.onCacheHit) opts.onCacheHit(cacheResponseProxy, ctx)
       // --- middleware returned ---
 
       /**
@@ -62,7 +62,7 @@ export const staleWhileRevalidate: KeqCacheStrategy = function (opts: StrategyOp
         }
       }, 1)
     } else {
-      if (opts.onCacheMiss) opts.onCacheMiss()
+      if (opts.onCacheMiss) opts.onCacheMiss(ctx)
       await next()
 
       if (ctx.response) {

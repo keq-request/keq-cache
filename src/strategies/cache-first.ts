@@ -23,12 +23,12 @@ export const cacheFirst: KeqCacheStrategy = function (opts) {
       ctx.metadata.entryNextTimes = 1
       ctx.metadata.outNextTimes = 1
 
-      if (opts.onCacheHit) opts.onCacheHit(cacheResponseProxy)
+      if (opts.onCacheHit) opts.onCacheHit(cacheResponseProxy, ctx)
 
       return
     }
 
-    if (opts.onCacheMiss) opts.onCacheMiss()
+    if (opts.onCacheMiss) opts.onCacheMiss(ctx)
 
     await next()
 
