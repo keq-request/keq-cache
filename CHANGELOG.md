@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/keq-request/keq-cache/compare/v2.2.0...v2.2.1) (2025-11-05)
+
+
+### Performance Improvements
+
+* add context to onCacheHit and onCacheMiss ([fa20404](https://github.com/keq-request/keq-cache/commit/fa2040482d585794cda2196b5e1cde57bb555759))
+
 ## [2.2.0](https://github.com/keq-request/keq-cache/compare/v2.1.3...v2.2.0) (2025-10-24)
 
 
