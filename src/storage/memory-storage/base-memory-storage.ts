@@ -89,5 +89,62 @@ export abstract class BaseMemoryStorage extends InternalStorage {
 
     return size.free >= expectSize
   }
+
+  /**
+   * @en Print all cached data using console.table for debugging
+   * @zh 使用 console.table 打印所有缓存数据，用于调试
+   */
+  async print(): Promise<void> {
+    if (this.storage.size === 0) {
+      console.log('MemoryStorage is empty')
+      return
+    }
+
+    const entries = await Promise.all(
+      [...this.storage.entries()].map(async ([key, entry]) => {
+        const body = await this.serializeResponseBody(entry.response.clone())
+
+        return {
+          key,
+          size: entry.size,
+          expiredAt: entry.expiredAt.toISOString(),
+          visitCount: this.visitCountRecords.get(key) ?? 0,
+          lastVisitTime: this.visitTimeRecords.get(key)?.toISOString() ?? '-',
+          status: entry.response.status,
+          url: entry.response.url,
+          body,
+        }
+      }),
+    )
+
+    console.table(entries)
+  }
+
+  /**
+   * @en Serialize the response body based on content-type
+   * @zh 根据 content-type 序列化响应体
+   */
+  private async serializeResponseBody(response: Response): Promise<string> {
+    const contentType = response.headers.get('content-type') ?? ''
+
+    try {
+      if (contentType.includes('application/json')) {
+        const json = await response.json()
+        return JSON.stringify(json)
+      }
+
+      if (
+        contentType.includes('text/') ||
+        contentType.includes('application/xml') ||
+        contentType.includes('application/javascript')
+      ) {
+        return await response.text()
+      }
+
+      return '[Binary or unsupported content]'
+    } catch {
+      return '[Unable to serialize]'
+    }
+  }
 }
 
