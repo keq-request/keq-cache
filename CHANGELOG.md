@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/keq-request/keq-cache/compare/v2.2.1...v2.3.0) (2025-12-09)
+
+
+### Features
+
+* add print method to display cache data ([513c519](https://github.com/keq-request/keq-cache/commit/513c51908cc18f6f9271e649fd80492b3a4ffcf2))
+
 ## [2.2.1](https://github.com/keq-request/keq-cache/compare/v2.2.0...v2.2.1) (2025-11-05)
 
 
