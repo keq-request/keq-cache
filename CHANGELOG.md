@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/keq-request/keq-cache/compare/v2.3.1...v2.3.2) (2025-12-10)
+
+
+### Bug Fixes
+
+* unable publish ([1473eb5](https://github.com/keq-request/keq-cache/commit/1473eb5a0572fa73a151f40631f579214a59483b))
+
 ## [2.3.1](https://github.com/keq-request/keq-cache/compare/v2.3.0...v2.3.1) (2025-12-10)
 
 
