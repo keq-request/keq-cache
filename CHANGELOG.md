@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.9](https://github.com/keq-request/keq-cache/compare/v2.3.8...v2.3.9) (2025-12-10)
+
+
+### Bug Fixes
+
+* update node.js version in workflows ([70203f5](https://github.com/keq-request/keq-cache/commit/70203f510424dde518a8d9ef926cd02249d61db1))
+
 ## [2.3.8](https://github.com/keq-request/keq-cache/compare/v2.3.7...v2.3.8) (2025-12-10)
 
 
