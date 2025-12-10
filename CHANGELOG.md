@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.8](https://github.com/keq-request/keq-cache/compare/v2.3.7...v2.3.8) (2025-12-10)
+
+
+### Bug Fixes
+
+* oidc npm publish ([fe94a4f](https://github.com/keq-request/keq-cache/commit/fe94a4f43cfb51fa525ee722452ae1358e8140dc))
+
 ## [2.3.7](https://github.com/keq-request/keq-cache/compare/v2.3.6...v2.3.7) (2025-12-10)
 
 
