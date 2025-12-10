@@ -56,7 +56,7 @@
     "typescript": "5.4.5",
     "typescript-transform-paths": "^3.5.2"
   },
-  "packageManager": "pnpm@9.14.2",
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
   "engines": {
     "node": ">=18.0.0"
   },
