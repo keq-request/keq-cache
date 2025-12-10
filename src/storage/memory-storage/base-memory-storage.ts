@@ -106,18 +106,29 @@ export abstract class BaseMemoryStorage extends InternalStorage {
 
         return {
           key,
-          size: entry.size,
-          expiredAt: entry.expiredAt.toISOString(),
-          visitCount: this.visitCountRecords.get(key) ?? 0,
-          lastVisitTime: this.visitTimeRecords.get(key)?.toISOString() ?? '-',
-          status: entry.response.status,
-          url: entry.response.url,
-          body,
+          size: this.humanizeSize(entry.size),
+          'Expired Time': entry.expiredAt.getTime() >= 8640000000000000 ? '-' : entry.expiredAt.toISOString(),
+          'Visit Count': this.visitCountRecords.get(key) ?? 0,
+          'Last Visit Time': this.visitTimeRecords.get(key)?.toISOString() ?? '-',
+          'Response Status': entry.response.status,
+          'Response URL': entry.response.url,
+          'Response Body': body,
         }
       }),
     )
 
     console.table(entries)
+  }
+
+  /**
+   * @en Humanize size in bytes to KB, MB, GB
+   * @zh 将字节数转换为 KB、MB、GB 等易读格式
+   */
+  private humanizeSize(size: number): string {
+    if (size < 1024) return `${size} B`
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`
+    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`
   }
 
   /**

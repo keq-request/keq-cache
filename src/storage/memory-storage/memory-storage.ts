@@ -1,6 +1,5 @@
 import { Promisable } from 'type-fest'
 import { Eviction } from '~/constants/eviction.enum.js'
-import { InternalStorage } from '../internal-storage/internal-storage.js'
 import { TTLMemoryStorage } from './ttl-memory-storage.js'
 import { RandomMemoryStorage } from './random-memory-storage.js'
 import { LRUMemoryStorage } from './lru-memory-storage.js'
@@ -8,9 +7,10 @@ import { LFUMemoryStorage } from './lfu-memory-storage.js'
 import { MemoryStorageOptions } from './types/memory-storage-options.js'
 import { CacheEntry } from '~/cache-entry/cache-entry.js'
 import { KeqCacheStorage } from '../keq-cache-storage.js'
+import { BaseMemoryStorage } from './base-memory-storage.js'
 
 export class MemoryStorage extends KeqCacheStorage {
-  private storage: InternalStorage
+  private storage: BaseMemoryStorage
 
   constructor(options?: MemoryStorageOptions) {
     super()
@@ -40,5 +40,13 @@ export class MemoryStorage extends KeqCacheStorage {
 
   remove(key: string): Promisable<void> {
     return this.storage.remove(key)
+  }
+
+  /**
+   * @en Print all cached data using console.table for debugging
+   * @zh 使用 console.table 打印所有缓存数据，用于调试
+   */
+  async print(): Promise<void> {
+    await this.storage.print()
   }
 }
