@@ -181,7 +181,7 @@ export abstract class BaseIndexedDBStorage extends InternalStorage {
   }
 
 
-  private lastEvictExpiredTime = dayjs()
+  private lastEvictExpiredTime = dayjs(0)
 
   /**
    * @zh 清除过期的缓存
@@ -189,10 +189,9 @@ export abstract class BaseIndexedDBStorage extends InternalStorage {
   protected async evictExpired(): Promise<void> {
     const now = dayjs()
     if (now.diff(this.lastEvictExpiredTime, 'second') < 1) return
+    this.lastEvictExpiredTime = dayjs()
 
     try {
-      const now = dayjs()
-
       const db = await this.openDB()
       const tx = db.transaction(['metadata', 'response', 'visits'], 'readwrite')
       const metadataStore = tx.objectStore('metadata')
@@ -201,7 +200,7 @@ export abstract class BaseIndexedDBStorage extends InternalStorage {
 
       let cursor = await metadataStore
         .index('expiredAt')
-        .openCursor(IDBKeyRange.upperBound(now.valueOf()))
+        .openCursor(IDBKeyRange.upperBound(now.toDate()))
 
       const expiredKeys: string[] = []
       while (cursor) {
