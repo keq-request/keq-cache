@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.9](https://github.com/keq-request/keq-cache/compare/v2.3.8...v2.3.9) (2025-12-12)
+
+
+### Bug Fixes
+
+* cannot evict ttl cache ([7d99868](https://github.com/keq-request/keq-cache/commit/7d99868330def78be013b4ddd5bd4029b47b016f))
+
 ## [2.3.8](https://github.com/keq-request/keq-cache/compare/v2.3.7...v2.3.8) (2025-12-10)
 
 
