@@ -18,17 +18,19 @@ export const staleWhileRevalidate: KeqCacheStrategy = function (opts: StrategyOp
         get() {
           return cache.response
         },
-        async set(value) {
-          if (!opts.exclude || !(await opts.exclude(value))) {
+        async set(newResponse) {
+          const newResponseProxy = createResponseProxy(newResponse)
+
+          if (!opts.exclude || !(await opts.exclude(newResponseProxy))) {
             storage.set(await CacheEntry.build({
               key: key,
-              response: value,
+              response: newResponseProxy,
               ttl: opts.ttl,
             }))
           }
 
           if (opts.onNetworkResponse) {
-            opts.onNetworkResponse(value.clone(), cacheResponseProxy.clone())
+            opts.onNetworkResponse(newResponseProxy, cacheResponseProxy)
           }
         },
       })
@@ -75,7 +77,7 @@ export const staleWhileRevalidate: KeqCacheStrategy = function (opts: StrategyOp
         }
 
         if (opts.onNetworkResponse) {
-          opts.onNetworkResponse(ctx.response.clone())
+          opts.onNetworkResponse(ctx.response)
         }
       }
     }
