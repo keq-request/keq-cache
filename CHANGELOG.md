@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.10](https://github.com/keq-request/keq-cache/compare/v2.3.9...v2.3.10) (2025-12-15)
+
+
+### Bug Fixes
+
+* exclude get an un-proxy response ([54ec224](https://github.com/keq-request/keq-cache/commit/54ec2240c35af101d6a8354dfd048f9b8274f7cf))
+
 ## [2.3.9](https://github.com/keq-request/keq-cache/compare/v2.3.8...v2.3.9) (2025-12-12)
 
 
